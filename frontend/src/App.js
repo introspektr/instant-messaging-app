@@ -1,36 +1,9 @@
-/*
-import logo from './logo.svg';
-import './App.css';
-*/
-
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, useParams } from 'react-router-dom';
 import Register from './components/Register';
 import Login from './components/Login';
 import Home from './components/Home';
-
-/*
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
-*/
+import ChatRoom from './components/ChatRoom';
 
 const App = () => {
   return (
@@ -43,6 +16,9 @@ const App = () => {
           <li>
             <Link to="/login">Login</Link>
           </li>
+          <li>
+            <Link to="/chat/1">Chat Room</Link> {/* Example link to a chat room */}
+          </li>
         </ul>
       </nav>
 
@@ -50,9 +26,18 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/chat/:chatRoomId" element={<ChatRoomWrapper />} /> {/* Add this route */}
       </Routes>
     </Router>
   );
+};
+
+// Wrapper component to extract chatRoomId from the URL
+const ChatRoomWrapper = () => {
+  const { chatRoomId } = useParams(); // Extract chatRoomId from the URL
+  const userId = localStorage.getItem('userId'); // Get userId from local storage
+
+  return <ChatRoom chatRoomId={chatRoomId} userId={userId} />;
 };
 
 export default App;

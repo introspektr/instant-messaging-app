@@ -3,25 +3,33 @@ const bcrypt = require('bcryptjs');
 
 // Define the User schema
 const userSchema = new mongoose.Schema({
-  email: { 
-    type: String, 
-    required: true, 
+  email: {
+    type: String,
+    required: true,
     unique: true, // Ensure email is unique
     trim: true,   // Remove extra spaces
     lowercase: true, // Convert email to lowercase
   },
-  password: { 
-    type: String, 
+  password: {
+    type: String,
     required: true,
     minlength: 6, // Enforce minimum password length
   },
-  firstName: { 
-    type: String, 
+  firstName: {
+    type: String,
     default: '',  // Optional field
   },
-  lastName: { 
-    type: String, 
+  lastName: {
+    type: String,
     default: '',  // Optional field
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now, // Automatically set the creation date
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now, // Automatically set the update date
   },
 });
 
@@ -32,6 +40,11 @@ userSchema.pre('save', async function (next) {
   }
   next();
 });
+
+// Method to compare passwords for login
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 // Create the User model
 const User = mongoose.model('User', userSchema);
