@@ -30,11 +30,13 @@ const Signup = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/register', {
+            console.log('Attempting to register user...'); // Debug log
+            const response = await fetch('http://localhost:8747/api/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     username: formData.username,
                     email: formData.email,
@@ -42,6 +44,7 @@ const Signup = () => {
                 })
             });
 
+            console.log('Response received:', response.status); // Debug log
             const data = await response.json();
             
             if (!response.ok) {
@@ -53,7 +56,8 @@ const Signup = () => {
             navigate('/login'); // Redirect to login page after successful signup
             
         } catch (err) {
-            setError(err.message);
+            console.error('Signup error:', err); // Enhanced error logging
+            setError(err.message || 'Failed to connect to the server');
         }
     };
 

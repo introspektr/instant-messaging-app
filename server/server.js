@@ -15,15 +15,15 @@ const io = new Server(server, {
 
 // Middleware
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.ORIGIN,
     credentials: true
 }));
 app.use(express.json());
 
-// MongoDB Connection
+// Connect to MongoDB
 mongoose.connect(process.env.DATABASE_URL)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Connection error:', err));
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
 const authRouter = require('./routes/auth');
@@ -33,6 +33,12 @@ app.use('/api/auth', authRouter);
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
   socket.on('disconnect', () => console.log('User disconnected'));
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
 });
 
 // Start server

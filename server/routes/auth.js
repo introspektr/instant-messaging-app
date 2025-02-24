@@ -1,31 +1,87 @@
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const auth = require('../middleware/auth');
 
-// Define authentication routes
+// Signup route
 router.post('/register', async (req, res) => {
     try {
+        console.log('Register request received:', req.body); // Debug log
         const { username, email, password } = req.body;
 
-        // Basic validation
-        if (!username || !email || !password) {
+        // Check if user already exists
+        const existingUser = await User.findOne({ 
+            $or: [{ email }, { username }] 
+        });
+
+        if (existingUser) {
+            console.log('User already exists'); // Debug log
             return res.status(400).json({ 
-                error: 'Please provide username, email and password' 
+                error: 'User with this email or username already exists' 
             });
         }
 
-        // TODO: Add actual registration logic here
-        // This is where you would:
-        // 1. Check if user already exists
-        // 2. Hash the password
-        // 3. Create user in database
-        // 4. Generate JWT token
-        // 5. Send response with token
+        // Create new user
+        const user = new User({ username, email, password });
+        await user.save();
+        console.log('User created successfully'); // Debug log
 
-        // Temporary response for testing
-        res.status(201).json({ 
-            message: 'Registration successful',
-            user: { username, email },
-            token: 'dummy-token'
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: user._id }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+
+        res.status(201).json({
+            message: 'User created successfully',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            },
+            token
+        });
+
+    } catch (error) {
+        console.error('Register error:', error); // Debug log
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Login route
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Check password
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: user._id }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+
+        res.json({
+            message: 'Login successful',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            },
+            token
         });
 
     } catch (error) {
@@ -33,29 +89,27 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/login', async (req, res) => {
+// Protected route example
+router.get('/me', auth, async (req, res) => {
     try {
-        const { email, password } = req.body;
-
-        // Basic validation
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Please provide both email and password' });
-        }
-
-        // TODO: Add actual authentication logic here
-        // This is where you would:
-        // 1. Check if user exists in database
-        // 2. Verify password
-        // 3. Generate JWT token
-        // 4. Send response with token
-
-        // Temporary response for testing
-        res.json({ 
-            message: 'Login successful',
-            user: { email },
-            token: 'dummy-token'
+        res.json({
+            user: {
+                id: req.user._id,
+                username: req.user.username,
+                email: req.user.email
+            }
         });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
+// Logout route
+router.post('/logout', auth, async (req, res) => {
+    try {
+        // In a real application, you might want to add the token to a blacklist
+        // or implement a token revocation mechanism
+        res.json({ message: 'Logged out successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

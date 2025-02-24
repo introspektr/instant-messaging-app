@@ -21,7 +21,7 @@ const Login = () => {
         setError('');
         
         try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
+            const response = await fetch('http://localhost:8747/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -80,7 +80,7 @@ const Login = () => {
                 </button>
 
                 <p className="register-link">
-                    Don't have an account? <Link to="/signup">Register here</Link>
+                    Don&apos;t have an account? <Link to="/signup">Register here</Link>
                 </p>
             </form>
         </div>

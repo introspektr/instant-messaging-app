@@ -37,6 +37,14 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
+    background-color: white;
+    color: #333;
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .signup-button {
