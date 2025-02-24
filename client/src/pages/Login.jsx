@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Login.css';
-import { Link } from 'react-router-dom';
 
 const Login = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -35,12 +36,15 @@ const Login = () => {
                 throw new Error(data.error || 'Login failed');
             }
 
-            // Handle successful login here
-            console.log('Login successful:', data);
-            // You might want to store the token in localStorage
-            // localStorage.setItem('token', data.token);
+            // Handle successful login
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Redirect to dashboard/chat page
+            navigate('/chat');
             
         } catch (err) {
+            console.error('Login error:', err);
             setError(err.message);
         }
     };
