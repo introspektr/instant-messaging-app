@@ -1,0 +1,8 @@
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply m-0 min-h-screen min-w-[320px] bg-background text-foreground;
+  }
+} 
