@@ -41,7 +41,7 @@ const validations = {
     ],
 
     roomId: [
-        param('id')
+        param('roomId')
             .isMongoId()
             .withMessage('Invalid room ID'),
     ],

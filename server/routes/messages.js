@@ -60,4 +60,58 @@ router.get('/:roomId/page/:page',
     }
 );
 
+// Add message to a specific room
+router.post('/:roomId', 
+    auth,
+    validations.roomId,
+    validations.message,
+    validateRequest,
+    async (req, res, next) => {
+        try {
+            const message = new Message({
+                content: req.body.content,
+                sender: req.user._id,
+                chatRoom: req.params.roomId
+            });
+
+            await message.save();
+            await message.populate('sender', 'username email');
+
+            res.status(201).json(message);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+// Delete a message
+router.delete('/:messageId', 
+    auth,
+    [
+        param('messageId')
+            .isMongoId()
+            .withMessage('Invalid message ID')
+    ],
+    validateRequest,
+    async (req, res, next) => {
+        try {
+            const message = await Message.findById(req.params.messageId);
+            
+            if (!message) {
+                return res.status(404).json({ error: 'Message not found' });
+            }
+
+            // Check if the user is the sender of the message
+            if (message.sender.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ error: 'Not authorized to delete this message' });
+            }
+
+            await Message.findByIdAndDelete(req.params.messageId);
+            res.json({ message: 'Message deleted successfully' });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 module.exports = router; 

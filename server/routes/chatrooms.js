@@ -64,10 +64,32 @@ router.get('/:id', auth, async (req, res) => {
     }
 });
 
+// Update a chat room
+router.put('/:id', auth, async (req, res) => {
+    try {
+        const { name } = req.body;
+        const chatRoom = await ChatRoom.findOneAndUpdate(
+            { _id: req.params.id, createdBy: req.user._id },
+            { name },
+            { new: true }
+        ).populate('createdBy', 'username email');
+
+        if (!chatRoom) {
+            return res.status(404).json({ 
+                error: 'Chat room not found or you are not authorized to update it' 
+            });
+        }
+
+        res.json(chatRoom);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Delete a chat room (only by creator)
 router.delete('/:id', auth, async (req, res) => {
     try {
-        const chatRoom = await ChatRoom.findOne({
+        const chatRoom = await ChatRoom.findOneAndDelete({
             _id: req.params.id,
             createdBy: req.user._id
         });
@@ -78,9 +100,7 @@ router.delete('/:id', auth, async (req, res) => {
             });
         }
 
-        await chatRoom.remove();
         res.json({ message: 'Chat room deleted successfully' });
-
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
