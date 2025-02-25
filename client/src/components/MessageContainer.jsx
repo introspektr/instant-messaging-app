@@ -1,36 +1,46 @@
 import PropTypes from 'prop-types';
 
-const MessageContainer = ({ messages, currentUser, onDelete }) => {
+const MessageContainer = ({ messages, onDelete }) => {
     return (
         <div className="message-container">
-            {messages.map((message) => (
-                <div key={message.id} className="message">
-                    <strong>{message.sender.username}</strong>: {message.content}
-                    {message.userId === currentUser.id && (
-                        <button 
-                            className="delete-button" 
-                            onClick={() => onDelete(message.id)}
-                        >
-                            Delete
-                        </button>
-                    )}
-                </div>
-            ))}
+            {messages.length === 0 ? (
+                <p className="no-messages">No messages yet. Start the conversation!</p>
+            ) : (
+                messages.map((message, index) => {
+                    // Handle different message formats
+                    const messageId = message._id || message.id || index;
+                    const messageContent = message.content || message.text || '';
+                    const messageSender = 
+                        (typeof message.sender === 'object' ? message.sender.username : message.sender) || 
+                        message.user || 
+                        'Unknown';
+                    
+                    return (
+                        <div key={messageId} className="message">
+                            <div className="message-content">
+                                <strong>{messageSender}: </strong>
+                                <span>{messageContent}</span>
+                            </div>
+                            {onDelete && (
+                                <button 
+                                    onClick={() => onDelete(messageId)} 
+                                    className="delete-message-button"
+                                    title="Delete message"
+                                >
+                                    🗑️
+                                </button>
+                            )}
+                        </div>
+                    );
+                })
+            )}
         </div>
     );
 };
 
 MessageContainer.propTypes = {
-    messages: PropTypes.arrayOf(
-        PropTypes.shape({
-            user: PropTypes.string.isRequired,
-            text: PropTypes.string.isRequired,
-        })
-    ).isRequired,
-    currentUser: PropTypes.shape({
-        id: PropTypes.string.isRequired,
-    }).isRequired,
-    onDelete: PropTypes.func.isRequired,
+    messages: PropTypes.array.isRequired,
+    onDelete: PropTypes.func
 };
 
 export default MessageContainer; 

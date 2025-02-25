@@ -4,7 +4,8 @@ import PropTypes from 'prop-types';
 const MessageInput = ({ onSendMessage }) => {
     const [message, setMessage] = useState('');
 
-    const handleSend = () => {
+    const handleSubmit = (e) => {
+        e.preventDefault(); // Prevent form submission from refreshing the page
         if (message.trim()) {
             onSendMessage(message);
             setMessage('');
@@ -12,15 +13,15 @@ const MessageInput = ({ onSendMessage }) => {
     };
 
     return (
-        <div className="message-input">
+        <form className="message-input" onSubmit={handleSubmit}>
             <input
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Type a message..."
             />
-            <button onClick={handleSend}>Send</button>
-        </div>
+            <button type="submit">Send</button>
+        </form>
     );
 };
 

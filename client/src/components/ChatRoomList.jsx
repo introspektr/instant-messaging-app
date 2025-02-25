@@ -1,13 +1,17 @@
 import PropTypes from 'prop-types';
 
-const ChatRoomList = ({ rooms, onSelectRoom }) => {
+const ChatRoomList = ({ rooms, onSelectRoom, currentRoom }) => {
     return (
         <div className="chat-room-list">
-            <h3>Available Rooms</h3>
+            <h3>Text Channels</h3>
             <ul>
                 {rooms.map((room) => (
-                    <li key={room._id} onClick={() => onSelectRoom(room._id)}>
-                        {room.name} (Created by: {room.createdBy.username})
+                    <li 
+                        key={room._id} 
+                        onClick={() => onSelectRoom(room._id)}
+                        className={currentRoom === room._id ? 'active' : ''}
+                    >
+                        {room.name}
                     </li>
                 ))}
             </ul>
@@ -23,6 +27,7 @@ ChatRoomList.propTypes = {
         })
     ).isRequired,
     onSelectRoom: PropTypes.func.isRequired,
+    currentRoom: PropTypes.string
 };
 
 export default ChatRoomList; 
