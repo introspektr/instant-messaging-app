@@ -4,22 +4,21 @@ const messageSchema = new mongoose.Schema({
     content: {
         type: String,
         required: true,
-        trim: true
     },
     sender: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
     },
     chatRoom: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'ChatRoom',
-        required: true
+        required: true,
     },
     timestamp: {
         type: Date,
-        default: Date.now
-    }
+        default: Date.now,
+    },
 });
 
 const Message = mongoose.model('Message', messageSchema);

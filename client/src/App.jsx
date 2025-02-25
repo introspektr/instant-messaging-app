@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+// import { useState } from 'react'
+// import reactLogo from './assets/react.svg'
+// import viteLogo from '/vite.svg'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Chat from './pages/Chat'
+import PropTypes from 'prop-types'
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -16,9 +17,12 @@ const ProtectedRoute = ({ children }) => {
     return children
 }
 
-function App() {
-  const [count, setCount] = useState(0)
+// Add prop types validation
+ProtectedRoute.propTypes = {
+    children: PropTypes.node.isRequired,
+};
 
+function App() {
   return (
     <Router>
       <Routes>

@@ -3,22 +3,22 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f5f5f5;
+    background-color: var(--darkBackground);
 }
 
 .login-form {
-    background: white;
+    background: #2a2a2a;
     padding: 2rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 400px;
+    text-align: center;
 }
 
 .login-form h2 {
-    text-align: center;
+    color: var(--darkForeground);
     margin-bottom: 1.5rem;
-    color: #333;
 }
 
 .form-group {
@@ -28,29 +28,29 @@
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #666;
+    color: var(--darkForeground);
 }
 
 .form-group input {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
+    border: 1px solid #444;
     border-radius: 4px;
     font-size: 1rem;
-    background-color: white;
-    color: #333;
+    background-color: #333;
+    color: var(--darkForeground);
     outline: none;
 }
 
 .form-group input:focus {
-    border-color: #007bff;
+    border-color: var(--darkAccent);
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .login-button {
     width: 100%;
     padding: 0.75rem;
-    background-color: #007bff;
+    background-color: #ff5722;
     color: white;
     border: none;
     border-radius: 4px;
@@ -60,7 +60,7 @@
 }
 
 .login-button:hover {
-    background-color: #0056b3;
+    background-color: #e64a19;
 }
 
 .error-message {
@@ -77,7 +77,7 @@
 }
 
 .register-link a {
-    color: #007bff;
+    color: var(--darkAccent);
     text-decoration: none;
 }
 

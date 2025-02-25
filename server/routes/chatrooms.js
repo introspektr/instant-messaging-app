@@ -31,17 +31,12 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Get all chat rooms
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const chatRooms = await ChatRoom.find()
-            .populate('createdBy', 'username email')
-            .populate('participants', 'username email')
-            .sort({ createdAt: -1 });
-
+        const chatRooms = await ChatRoom.find();
         res.json(chatRooms);
-
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to fetch chat rooms' });
     }
 });
 
