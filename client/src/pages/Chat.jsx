@@ -69,7 +69,12 @@ const Chat = () => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
 
+        console.log('Attempting to connect with:');
+        console.log('Token:', token);
+        console.log('Server URL:', import.meta.env.VITE_SERVER_URL);
+
         if (!token || !userData) {
+            console.error('No token or user data found, redirecting to login');
             navigate('/login');
             return;
         }
@@ -85,11 +90,27 @@ const Chat = () => {
             reconnectionAttempts: 5
         });
 
+        newSocket.on('connect', () => {
+            console.log('Socket connected successfully!');
+            setConnected(true);
+            socket.emit('getRooms');
+        });
+
+        newSocket.on('connect_error', (err) => {
+            console.error('Connection error details:', {
+                message: err.message,
+                code: err.code,
+                stack: err.stack
+            });
+            toastRef.current.addToast('Failed to connect to server', 'error');
+        });
+
         setSocket(newSocket);
 
         // Clean up on unmount
         return () => {
             if (newSocket) {
+                console.log('Cleaning up socket connection');
                 newSocket.disconnect();
             }
         };
@@ -103,7 +124,6 @@ const Chat = () => {
         const handleConnect = () => {
             console.log('Connected to server');
             setConnected(true);
-            socket.emit('getRooms');
         };
 
         const handleDisconnect = () => {

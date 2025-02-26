@@ -21,6 +21,9 @@ const socketHandler = (io) => {
     });
 
     io.on('connection', (socket) => {
+        console.log('New connection attempt from:', socket.handshake.headers);
+        console.log('Auth token:', socket.handshake.auth.token);
+
         console.log('New client connected');
 
         // Emit the list of rooms the user is a participant in
