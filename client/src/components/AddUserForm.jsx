@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import PropTypes from 'prop-types';
 
 const AddUserForm = ({ onAddUser, isCreator }) => {
@@ -59,4 +59,4 @@ AddUserForm.propTypes = {
     isCreator: PropTypes.bool.isRequired
 };
 
-export default AddUserForm; 
+export default memo(AddUserForm); 

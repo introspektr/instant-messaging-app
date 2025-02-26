@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 const MessageContainer = ({ messages, onDelete }) => {
@@ -43,4 +44,5 @@ MessageContainer.propTypes = {
     onDelete: PropTypes.func
 };
 
-export default MessageContainer; 
+// Use memo to prevent re-renders when props haven't changed
+export default memo(MessageContainer); 

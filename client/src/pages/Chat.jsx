@@ -1,11 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
 import io from 'socket.io-client';
 import ChatRoomList from '../components/ChatRoomList';
 import MessageContainer from '../components/MessageContainer';
 import MessageInput from '../components/MessageInput';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Chat.css';
-import AddUserForm from '../components/AddUserForm';
+import ToastContainer from '../components/ToastContainer';
+
+// Add this utility function at the top of your file
+const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+};
+
+// Lazy load the AddUserForm component
+const AddUserForm = lazy(() => import('../components/AddUserForm'));
 
 const Chat = () => {
     const navigate = useNavigate();
@@ -18,6 +34,35 @@ const Chat = () => {
     const [showSidebar, setShowSidebar] = useState(false);
     const [showParticipants, setShowParticipants] = useState(false);
     const [socket, setSocket] = useState(null);
+    const [connected, setConnected] = useState(false);
+
+    // Create a ref to hold the toast functions
+    const toastRef = useRef(null);
+    
+    // Get toast elements and functions
+    const { toastElements, addToast } = ToastContainer();
+    
+    // Store toast functions in ref for access in event handlers
+    useEffect(() => {
+        toastRef.current = { addToast };
+    }, [addToast]);
+
+    // Add this near your other useMemo hooks
+    const currentRoomData = useMemo(() => {
+        return rooms.find(room => room._id === currentRoom) || null;
+    }, [rooms, currentRoom]);
+
+    // Then update your isCreator calculation
+    const isCreator = useMemo(() => {
+        if (!user || !currentRoomData) return false;
+        return currentRoomData.createdBy?._id === user.id;
+    }, [currentRoomData, user]);
+
+    // Add this near your other useMemo hooks
+    const filteredMessages = useMemo(() => {
+        // If we have a lot of messages, this will prevent unnecessary re-filtering
+        return messages;
+    }, [messages]);
 
     // Initialize socket connection
     useEffect(() => {
@@ -50,62 +95,42 @@ const Chat = () => {
         };
     }, [navigate]);
 
-    // Set up socket event listeners after socket is created
+    // Set up global socket event listeners (not dependent on currentRoom)
     useEffect(() => {
         if (!socket) return;
 
-        // Set up socket connection events
-        socket.on('connect', () => {
+        // Connection events
+        const handleConnect = () => {
             console.log('Connected to server');
-            // Explicitly request rooms when connected
+            setConnected(true);
             socket.emit('getRooms');
-        });
+        };
 
-        socket.on('disconnect', () => {
+        const handleDisconnect = () => {
             console.log('Disconnected from server');
-        });
+            setConnected(false);
+        };
 
-        socket.on('connect_error', (error) => {
+        const handleConnectError = (error) => {
             console.error('Connection error:', error);
-        });
+        };
 
-        socket.on('rooms', (availableRooms) => {
+        // Data events
+        const handleRooms = (availableRooms) => {
             console.log('Available rooms:', availableRooms);
             setRooms(availableRooms);
-        });
+        };
 
-        socket.on('message', (messageData) => {
-            console.log('Received message:', messageData);
-            const messageToAdd = messageData.message || messageData;
-            setMessages((prevMessages) => [...prevMessages, messageToAdd]);
-        });
-
-        socket.on('error', (errorMessage) => {
+        const handleError = (errorMessage) => {
             console.error('Socket error:', errorMessage);
-            alert(`Error: ${errorMessage}`);
-        });
+            toastRef.current.addToast(errorMessage, 'error');
+        };
 
-        socket.on('userJoined', ({ userId, message }) => {
-            console.log(`User ${userId} joined: ${message}`);
-            // Refresh participants list
-            if (currentRoom) {
-                socket.emit('getRoomParticipants', { roomId: currentRoom });
-            }
-        });
+        const handleSuccess = (message) => {
+            toastRef.current.addToast(message, 'success');
+        };
 
-        socket.on('roomParticipants', (roomParticipants) => {
-            setParticipants(roomParticipants);
-        });
-
-        socket.on('messageDeleted', ({ messageId }) => {
-            setMessages(prevMessages => 
-                prevMessages.filter(msg => 
-                    (msg._id !== messageId && msg.id !== messageId)
-                )
-            );
-        });
-
-        socket.on('roomUpdated', (updatedRoom) => {
+        const handleRoomUpdated = (updatedRoom) => {
             setRooms(prevRooms => 
                 prevRooms.map(room => 
                     room._id === updatedRoom._id ? updatedRoom : room
@@ -115,25 +140,37 @@ const Chat = () => {
             if (currentRoom === updatedRoom._id) {
                 setParticipants(updatedRoom.participants);
             }
-        });
+        };
 
-        socket.on('success', (message) => {
-            alert(message); // You could replace this with a nicer notification
-        });
+        const handleRoomDeleted = ({ roomId }) => {
+            setRooms((prevRooms) => prevRooms.filter(room => room._id !== roomId));
+            if (currentRoom === roomId) {
+                setCurrentRoom(null);
+                setMessages([]);
+                setParticipants([]);
+            }
+        };
+
+        // Register event listeners
+        socket.on('connect', handleConnect);
+        socket.on('disconnect', handleDisconnect);
+        socket.on('connect_error', handleConnectError);
+        socket.on('rooms', handleRooms);
+        socket.on('error', handleError);
+        socket.on('success', handleSuccess);
+        socket.on('roomUpdated', handleRoomUpdated);
+        socket.on('roomDeleted', handleRoomDeleted);
 
         // Clean up event listeners
         return () => {
-            socket.off('connect');
-            socket.off('disconnect');
-            socket.off('connect_error');
-            socket.off('rooms');
-            socket.off('message');
-            socket.off('error');
-            socket.off('userJoined');
-            socket.off('roomParticipants');
-            socket.off('messageDeleted');
-            socket.off('roomUpdated');
-            socket.off('success');
+            socket.off('connect', handleConnect);
+            socket.off('disconnect', handleDisconnect);
+            socket.off('connect_error', handleConnectError);
+            socket.off('rooms', handleRooms);
+            socket.off('error', handleError);
+            socket.off('success', handleSuccess);
+            socket.off('roomUpdated', handleRoomUpdated);
+            socket.off('roomDeleted', handleRoomDeleted);
         };
     }, [socket, currentRoom]);
 
@@ -141,95 +178,103 @@ const Chat = () => {
     useEffect(() => {
         if (!socket || !currentRoom) return;
 
-        socket.on('messages', (roomMessages) => {
+        // Room-specific event handlers
+        const handleMessages = (roomMessages) => {
             setMessages(roomMessages);
-        });
+        };
 
-        socket.on('roomDeleted', ({ roomId }) => {
-            setRooms((prevRooms) => prevRooms.filter(room => room._id !== roomId));
-            if (currentRoom === roomId) {
-                setCurrentRoom(null);
-                setMessages([]);
-                setParticipants([]);
-            }
-        });
+        const handleMessage = (messageData) => {
+            console.log('Received message:', messageData);
+            const messageToAdd = messageData.message || messageData;
+            setMessages((prevMessages) => [...prevMessages, messageToAdd]);
+        };
 
+        const handleMessageDeleted = ({ messageId }) => {
+            setMessages(prevMessages => 
+                prevMessages.filter(msg => 
+                    (msg._id !== messageId && msg.id !== messageId)
+                )
+            );
+        };
+
+        const handleUserJoined = ({ userId, message }) => {
+            console.log(`User ${userId} joined: ${message}`);
+            socket.emit('getRoomParticipants', { roomId: currentRoom });
+        };
+
+        const handleRoomParticipants = (roomParticipants) => {
+            setParticipants(roomParticipants);
+        };
+
+        // Register room-specific event listeners
+        socket.on('messages', handleMessages);
+        socket.on('message', handleMessage);
+        socket.on('messageDeleted', handleMessageDeleted);
+        socket.on('userJoined', handleUserJoined);
+        socket.on('roomParticipants', handleRoomParticipants);
+
+        // Fetch initial data for the room
+        socket.emit('joinRoom', { roomId: currentRoom });
+        socket.emit('getMessages', { roomId: currentRoom });
+        socket.emit('getRoomParticipants', { roomId: currentRoom });
+
+        // Clean up room-specific event listeners
         return () => {
-            socket.off('messages');
-            socket.off('roomDeleted');
+            socket.off('messages', handleMessages);
+            socket.off('message', handleMessage);
+            socket.off('messageDeleted', handleMessageDeleted);
+            socket.off('userJoined', handleUserJoined);
+            socket.off('roomParticipants', handleRoomParticipants);
         };
     }, [socket, currentRoom]);
 
-    const handleSelectRoom = (roomId) => {
+    // Handler functions using useCallback to prevent unnecessary re-renders
+    const handleSelectRoom = useCallback((roomId) => {
         if (!socket) return;
         
         if (roomId) {
-            socket.emit('joinRoom', { roomId });
             setCurrentRoom(roomId);
-            const selectedRoom = rooms.find(room => room._id === roomId);
-            if (selectedRoom) {
-                setParticipants(selectedRoom.participants);
-            }
-
-            // Fetch messages for the selected room
-            socket.emit('getMessages', { roomId });
-            // Also get the latest participants
-            socket.emit('getRoomParticipants', { roomId });
         } else {
             console.error('Invalid roomId:', roomId);
         }
-    };
+    }, [socket]);
 
-    const handleSendMessage = (messageText) => {
-        if (!socket) return;
+    // Replace the current handleSendMessage implementation with this:
+    const handleSendMessage = useCallback((messageText) => {
+        if (!socket || !currentRoom) return;
         
-        if (currentRoom && messageText.trim()) {
+        if (messageText.trim()) {
             const messageData = { 
                 text: messageText, 
                 roomId: currentRoom 
             };
             
             socket.emit('sendMessage', messageData);
-        } else {
-            console.error('No room selected or empty message');
         }
-    };
+    }, [socket, currentRoom]);
 
-    const handleCreateRoom = () => {
-        if (!socket) return;
+    // Create a debounced version outside of useCallback
+    const debouncedSendMessage = useMemo(() => {
+        return debounce(handleSendMessage, 300);
+    }, [handleSendMessage]);
+
+    const handleCreateRoom = useCallback(() => {
+        if (!socket || !newRoomName.trim()) return;
         
-        if (newRoomName.trim()) {
-            console.log('Creating room:', newRoomName);
-            socket.emit('createRoom', { name: newRoomName });
-            setNewRoomName('');
-        } else {
-            console.error('Room name is empty');
-        }
-    };
+        console.log('Creating room:', newRoomName);
+        socket.emit('createRoom', { name: newRoomName });
+        setNewRoomName('');
+    }, [socket, newRoomName]);
 
-    const handleDeleteRoom = () => {
-        if (!socket) return;
+    const handleDeleteRoom = useCallback(() => {
+        if (!socket || !currentRoom || !isCreator) return;
         
-        if (currentRoom) {
-            console.log('Attempting to delete room:', currentRoom);
-            
-            const room = rooms.find(room => room._id === currentRoom);
-            console.log('Room found:', room);
-            console.log('Current user ID:', user.id);
-            console.log('Room creator ID:', room?.createdBy?._id);
-            
-            if (room && room.createdBy && String(room.createdBy._id) === String(user.id)) {
-                console.log('User is creator, emitting deleteRoom event');
-                socket.emit('deleteRoom', { roomId: currentRoom });
-            } else {
-                alert('Only the room creator can delete this room');
-                console.log('Not the creator - Room creator:', String(room?.createdBy?._id), 'User:', String(user.id));
-            }
-        }
-    };
+        console.log('Attempting to delete room:', currentRoom);
+        socket.emit('deleteRoom', { roomId: currentRoom });
+    }, [socket, currentRoom, isCreator]);
 
-    const handleDelete = (messageId) => {
-        if (!socket) return;
+    const handleDeleteMessage = useCallback((messageId) => {
+        if (!socket || !currentRoom) return;
         
         console.log('Attempting to delete message:', messageId);
         
@@ -243,137 +288,151 @@ const Chat = () => {
         }
         
         socket.emit('deleteMessage', { messageId, roomId: currentRoom });
-        
-        // Let the server handle the UI update via the messageDeleted event
-    };
+    }, [socket, currentRoom, messages]);
 
-    // Add this function to handle form submission
+    const handleAddUser = useCallback((username) => {
+        if (!socket || !currentRoom) return;
+        
+        console.log(`Attempting to add user ${username} to room ${currentRoom}`);
+        socket.emit('addUserToRoom', { roomId: currentRoom, username });
+    }, [socket, currentRoom]);
+
     const handleCreateRoomSubmit = (e) => {
         e.preventDefault();
         handleCreateRoom();
     };
 
-    // Add this function to handle overlay clicks
     const handleOverlayClick = () => {
         setShowSidebar(false);
         setShowParticipants(false);
     };
 
-    const handleAddUser = (username) => {
-        if (!socket || !currentRoom) return;
-        
-        console.log(`Attempting to add user ${username} to room ${currentRoom}`);
-        socket.emit('addUserToRoom', { roomId: currentRoom, username });
-    };
-
+    // Rest of your component remains the same, but update the props to use the memoized values
     return (
-        <div className="chat-app">
-            {/* Mobile overlay */}
-            <div 
-                className={`mobile-overlay ${showSidebar || showParticipants ? 'show' : ''}`} 
-                onClick={handleOverlayClick}
-            ></div>
-            
-            <div className={`sidebar ${showSidebar ? 'show' : ''}`}>
-                <div className="user-info">
-                    <h3>{user?.username}</h3>
-                    <button 
-                        className="logout-button"
-                        onClick={() => {
-                            localStorage.removeItem('token');
-                            localStorage.removeItem('user');
-                            navigate('/login');
-                        }}
-                    >
-                        Logout
-                    </button>
-                </div>
+        <>
+            {toastElements}
+            <div className="chat-app">
+                {/* Mobile overlay */}
+                <div 
+                    className={`mobile-overlay ${showSidebar || showParticipants ? 'show' : ''}`} 
+                    onClick={handleOverlayClick}
+                ></div>
                 
-                <div className="room-creation">
-                    <form onSubmit={handleCreateRoomSubmit}>
-                        <input
-                            type="text"
-                            value={newRoomName}
-                            onChange={(e) => setNewRoomName(e.target.value)}
-                            placeholder="New room name"
-                            className="new-room-input"
-                        />
-                        <button type="submit" className="create-room-button">
-                            Create Room
+                <div className={`sidebar ${showSidebar ? 'show' : ''}`}>
+                    <div className="user-info">
+                        <h3>{user?.username}</h3>
+                        <div className="connection-status">
+                            <span className={`status-indicator ${connected ? 'online' : 'offline'}`}></span>
+                            {connected ? 'Connected' : 'Disconnected'}
+                        </div>
+                        <button 
+                            className="logout-button"
+                            onClick={() => {
+                                localStorage.removeItem('token');
+                                localStorage.removeItem('user');
+                                navigate('/login');
+                            }}
+                        >
+                            Logout
                         </button>
-                    </form>
+                    </div>
+                    
+                    <div className="room-creation">
+                        <form onSubmit={handleCreateRoomSubmit}>
+                            <input
+                                type="text"
+                                value={newRoomName}
+                                onChange={(e) => setNewRoomName(e.target.value)}
+                                placeholder="New room name"
+                                className="new-room-input"
+                            />
+                            <button type="submit" className="create-room-button">
+                                Create Room
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <ChatRoomList 
+                        rooms={rooms} 
+                        onSelectRoom={handleSelectRoom} 
+                        currentRoom={currentRoom} 
+                    />
                 </div>
                 
-                <ChatRoomList rooms={rooms} onSelectRoom={handleSelectRoom} currentRoom={currentRoom} />
+                {currentRoom ? (
+                    <div className="chat-area">
+                        <div className="chat-header">
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <button 
+                                    className="show-sidebar" 
+                                    onClick={() => setShowSidebar(!showSidebar)}
+                                    title="Show channels"
+                                >
+                                    ☰
+                                </button>
+                                <h2># {currentRoomData?.name}</h2>
+                            </div>
+                            <div>
+                                <button 
+                                    className="show-participants" 
+                                    onClick={() => setShowParticipants(!showParticipants)}
+                                    title="Show participants"
+                                >
+                                    👥
+                                </button>
+                                {isCreator && (
+                                    <button 
+                                        onClick={handleDeleteRoom} 
+                                        className="delete-room-button" 
+                                        title="Delete Room"
+                                    >
+                                        🗑️
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <MessageContainer 
+                            messages={filteredMessages} 
+                            onDelete={handleDeleteMessage} 
+                        />
+                        
+                        <MessageInput onSendMessage={debouncedSendMessage} />
+                    </div>
+                ) : (
+                    <div className="no-room-selected">
+                        <div className="welcome-message">
+                            <h2>Welcome to Chat!</h2>
+                            <p>Select a room to start chatting or create a new one.</p>
+                        </div>
+                    </div>
+                )}
+                
+                {currentRoom && (
+                    <div className={`participants-sidebar ${showParticipants ? 'show' : ''}`}>
+                        <h3>Participants</h3>
+                        
+                        <Suspense fallback={<div>Loading...</div>}>
+                            <AddUserForm 
+                                onAddUser={handleAddUser} 
+                                isCreator={isCreator} 
+                            />
+                        </Suspense>
+                        
+                        <ul className="participants-list">
+                            {participants.map(participant => (
+                                <li key={participant._id} className="participant">
+                                    <div className="participant-avatar">
+                                        {participant.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span>{participant.username}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </div>
-            
-            {currentRoom ? (
-                <div className="chat-area">
-                    <div className="chat-header">
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <button 
-                                className="show-sidebar" 
-                                onClick={() => setShowSidebar(!showSidebar)}
-                                title="Show channels"
-                            >
-                                ☰
-                            </button>
-                            <h2># {rooms.find(room => room._id === currentRoom)?.name}</h2>
-                        </div>
-                        <div>
-                            <button 
-                                className="show-participants" 
-                                onClick={() => setShowParticipants(!showParticipants)}
-                                title="Show participants"
-                            >
-                                👥
-                            </button>
-                            <button onClick={handleDeleteRoom} className="delete-room-button" title="Delete Room">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <MessageContainer 
-                        messages={messages} 
-                        onDelete={handleDelete} 
-                    />
-                    
-                    <MessageInput onSendMessage={handleSendMessage} />
-                </div>
-            ) : (
-                <div className="no-room-selected">
-                    <div className="welcome-message">
-                        <h2>Welcome to Chat!</h2>
-                        <p>Select a room to start chatting or create a new one.</p>
-                    </div>
-                </div>
-            )}
-            
-            {currentRoom && (
-                <div className={`participants-sidebar ${showParticipants ? 'show' : ''}`}>
-                    <h3>Participants</h3>
-                    
-                    <AddUserForm 
-                        onAddUser={handleAddUser} 
-                        isCreator={
-                            rooms.find(room => room._id === currentRoom)?.createdBy?._id === user?.id
-                        } 
-                    />
-                    
-                    <ul className="participants-list">
-                        {participants.map(participant => (
-                            <li key={participant._id} className="participant">
-                                <div className="participant-avatar">
-                                    {participant.username.charAt(0).toUpperCase()}
-                                </div>
-                                <span>{participant.username}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-        </div>
+        </>
     );
 };
 

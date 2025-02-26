@@ -507,4 +507,27 @@
 
 .cancel-add-button:hover {
     background-color: #4d5057;
+}
+
+/* Add these styles for the connection indicator */
+.connection-status {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.online {
+    background-color: #43b581;
+}
+
+.offline {
+    background-color: #f04747;
 } 

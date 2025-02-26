@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 const ChatRoomList = ({ rooms, onSelectRoom, currentRoom }) => {
@@ -30,4 +31,4 @@ ChatRoomList.propTypes = {
     currentRoom: PropTypes.string
 };
 
-export default ChatRoomList; 
+export default memo(ChatRoomList); 
