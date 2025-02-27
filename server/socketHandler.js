@@ -2,6 +2,7 @@ const Message = require('./models/Message');
 const ChatRoom = require('./models/ChatRoom');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
+const { ObjectId } = require('mongodb');
 
 const socketHandler = (io) => {
     // Middleware to authenticate socket connections
@@ -67,11 +68,6 @@ const socketHandler = (io) => {
 
         // Handle joining a chat room
         socket.on('joinRoom', async ({ roomId }) => {
-            if (!roomId) {
-                socket.emit('error', 'Invalid room ID');
-                return;
-            }
-
             try {
                 const chatRoom = await ChatRoom.findById(roomId);
                 if (!chatRoom) {
@@ -79,21 +75,14 @@ const socketHandler = (io) => {
                     return;
                 }
 
-                // Check if user is a participant
                 if (!chatRoom.participants.includes(socket.userId)) {
                     socket.emit('error', 'Not authorized to join this room');
                     return;
                 }
 
                 socket.join(roomId);
-                console.log(`User ${socket.userId} joined room ${roomId}`);
-
-                // Notify others in the room
-                socket.to(roomId).emit('userJoined', {
-                    userId: socket.userId,
-                    message: 'User joined the chat'
-                });
-
+                // Emit room data to the client
+                socket.emit('roomData', chatRoom);
             } catch (error) {
                 socket.emit('error', error.message);
             }
@@ -102,29 +91,33 @@ const socketHandler = (io) => {
         // Handle sending messages
         socket.on('sendMessage', async (message) => {
             try {
+                // Validate message data
+                if (!message.text || !message.roomId || !message.sender) {
+                    throw new Error('Invalid message data');
+                }
+
                 const messageObj = new Message({
                     content: message.text,
-                    sender: socket.userId,
+                    sender: message.sender,
                     chatRoom: message.roomId,
                 });
 
                 await messageObj.save();
                 await messageObj.populate('sender', 'username');
 
-                // Broadcast the message to everyone in the room with a consistent format
+                // Broadcast the message with consistent format
                 io.to(message.roomId).emit('message', {
-                    message: {
-                        _id: messageObj._id,
-                        content: messageObj.content,
-                        sender: {
-                            _id: messageObj.sender._id,
-                            username: messageObj.sender.username
-                        },
-                        timestamp: messageObj.timestamp
-                    }
+                    _id: messageObj._id,
+                    content: messageObj.content,
+                    sender: {
+                        _id: messageObj.sender._id,
+                        username: messageObj.sender.username
+                    },
+                    timestamp: messageObj.timestamp
                 });
 
             } catch (error) {
+                console.error('Error sending message:', error);
                 socket.emit('error', error.message);
             }
         });
@@ -162,6 +155,7 @@ const socketHandler = (io) => {
                     return;
                 }
 
+                // Check if the user is the creator of the room
                 if (room.createdBy.toString() !== socket.userId) {
                     socket.emit('error', 'Not authorized to delete this room');
                     return;
@@ -175,7 +169,7 @@ const socketHandler = (io) => {
                 
                 io.emit('roomDeleted', { roomId }); // Notify all clients about the deletion
             } catch (error) {
-                console.error('Error deleting room:', error.message); // Debugging log
+                console.error('Error deleting room:', error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -196,10 +190,7 @@ const socketHandler = (io) => {
                     return;
                 }
                 
-                // Delete the message
                 await Message.findByIdAndDelete(messageId);
-                
-                // Notify all clients in the room about the deletion
                 io.to(roomId).emit('messageDeleted', { messageId });
             } catch (error) {
                 console.error('Error deleting message:', error.message);

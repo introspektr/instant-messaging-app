@@ -7,24 +7,17 @@ const MessageContainer = ({ messages, onDelete }) => {
             {messages.length === 0 ? (
                 <p className="no-messages">No messages yet. Start the conversation!</p>
             ) : (
-                messages.map((message, index) => {
-                    // Handle different message formats
-                    const messageId = message._id || message.id || index;
-                    const messageContent = message.content || message.text || '';
-                    const messageSender = 
-                        (typeof message.sender === 'object' ? message.sender.username : message.sender) || 
-                        message.user || 
-                        'Unknown';
-                    
+                messages.map((message) => {
+                    const senderName = message.sender?.username || 'Unknown';
                     return (
-                        <div key={messageId} className="message">
+                        <div key={message._id} className="message">
                             <div className="message-content">
-                                <strong>{messageSender}: </strong>
-                                <span>{messageContent}</span>
+                                <strong>{senderName}: </strong>
+                                <span>{message.content}</span>
                             </div>
                             {onDelete && (
                                 <button 
-                                    onClick={() => onDelete(messageId)} 
+                                    onClick={() => onDelete(message._id)} 
                                     className="delete-message-button"
                                     title="Delete message"
                                 >

@@ -69,12 +69,7 @@ const Chat = () => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
 
-        console.log('Attempting to connect with:');
-        console.log('Token:', token);
-        console.log('Server URL:', import.meta.env.VITE_SERVER_URL);
-
         if (!token || !userData) {
-            console.error('No token or user data found, redirecting to login');
             navigate('/login');
             return;
         }
@@ -82,7 +77,6 @@ const Chat = () => {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
 
-        // Create socket connection with the token
         const newSocket = io(import.meta.env.VITE_SERVER_URL, {
             auth: { token },
             reconnection: true,
@@ -93,34 +87,27 @@ const Chat = () => {
         newSocket.on('connect', () => {
             console.log('Socket connected successfully!');
             setConnected(true);
-            socket.emit('getRooms');
+            newSocket.emit('getRooms');
         });
 
         newSocket.on('connect_error', (err) => {
-            console.error('Connection error details:', {
-                message: err.message,
-                code: err.code,
-                stack: err.stack
-            });
+            console.error('Connection error:', err);
             toastRef.current.addToast('Failed to connect to server', 'error');
         });
 
         setSocket(newSocket);
 
-        // Clean up on unmount
         return () => {
             if (newSocket) {
-                console.log('Cleaning up socket connection');
                 newSocket.disconnect();
             }
         };
     }, [navigate]);
 
-    // Set up global socket event listeners (not dependent on currentRoom)
+    // Set up global socket event listeners
     useEffect(() => {
         if (!socket) return;
 
-        // Connection events
         const handleConnect = () => {
             console.log('Connected to server');
             setConnected(true);
@@ -131,89 +118,54 @@ const Chat = () => {
             setConnected(false);
         };
 
-        const handleConnectError = (error) => {
-            console.error('Connection error:', error);
-        };
-
-        // Data events
         const handleRooms = (availableRooms) => {
-            console.log('Available rooms:', availableRooms);
+            console.log('Received rooms:', availableRooms);
             setRooms(availableRooms);
         };
 
-        const handleError = (errorMessage) => {
-            console.error('Socket error:', errorMessage);
-            toastRef.current.addToast(errorMessage, 'error');
-        };
-
-        const handleSuccess = (message) => {
-            toastRef.current.addToast(message, 'success');
-        };
-
-        const handleRoomUpdated = (updatedRoom) => {
-            setRooms(prevRooms => 
-                prevRooms.map(room => 
-                    room._id === updatedRoom._id ? updatedRoom : room
-                )
-            );
-            
-            if (currentRoom === updatedRoom._id) {
-                setParticipants(updatedRoom.participants);
-            }
-        };
-
-        const handleRoomDeleted = ({ roomId }) => {
-            setRooms((prevRooms) => prevRooms.filter(room => room._id !== roomId));
-            if (currentRoom === roomId) {
-                setCurrentRoom(null);
-                setMessages([]);
-                setParticipants([]);
-            }
-        };
+        // Add other event handlers...
 
         // Register event listeners
         socket.on('connect', handleConnect);
         socket.on('disconnect', handleDisconnect);
-        socket.on('connect_error', handleConnectError);
         socket.on('rooms', handleRooms);
-        socket.on('error', handleError);
-        socket.on('success', handleSuccess);
-        socket.on('roomUpdated', handleRoomUpdated);
-        socket.on('roomDeleted', handleRoomDeleted);
+        socket.on('error', (errorMessage) => {
+            console.error('Socket error:', errorMessage);
+            toastRef.current.addToast(errorMessage, 'error');
+        });
+        // Add other listeners...
 
         // Clean up event listeners
         return () => {
             socket.off('connect', handleConnect);
             socket.off('disconnect', handleDisconnect);
-            socket.off('connect_error', handleConnectError);
             socket.off('rooms', handleRooms);
-            socket.off('error', handleError);
-            socket.off('success', handleSuccess);
-            socket.off('roomUpdated', handleRoomUpdated);
-            socket.off('roomDeleted', handleRoomDeleted);
+            // Remove other listeners...
         };
-    }, [socket, currentRoom]);
+    }, [socket]); // Only depends on socket
 
     // Room-specific event listeners
     useEffect(() => {
         if (!socket || !currentRoom) return;
 
-        // Room-specific event handlers
         const handleMessages = (roomMessages) => {
+            console.log('Received message:', roomMessages);
             setMessages(roomMessages);
         };
 
         const handleMessage = (messageData) => {
             console.log('Received message:', messageData);
-            const messageToAdd = messageData.message || messageData;
-            setMessages((prevMessages) => [...prevMessages, messageToAdd]);
+            setMessages(prevMessages => [...prevMessages, {
+                _id: messageData._id,
+                content: messageData.content,
+                sender: messageData.sender,
+                timestamp: messageData.timestamp
+            }]);
         };
 
         const handleMessageDeleted = ({ messageId }) => {
             setMessages(prevMessages => 
-                prevMessages.filter(msg => 
-                    (msg._id !== messageId && msg.id !== messageId)
-                )
+                prevMessages.filter(msg => msg._id !== messageId)
             );
         };
 
@@ -234,6 +186,7 @@ const Chat = () => {
         socket.on('roomParticipants', handleRoomParticipants);
 
         // Fetch initial data for the room
+        console.log('Joining room:', currentRoom);
         socket.emit('joinRoom', { roomId: currentRoom });
         socket.emit('getMessages', { roomId: currentRoom });
         socket.emit('getRoomParticipants', { roomId: currentRoom });
@@ -245,8 +198,9 @@ const Chat = () => {
             socket.off('messageDeleted', handleMessageDeleted);
             socket.off('userJoined', handleUserJoined);
             socket.off('roomParticipants', handleRoomParticipants);
+            socket.emit('leaveRoom', { roomId: currentRoom });
         };
-    }, [socket, currentRoom]);
+    }, [socket, currentRoom]); // Only depends on socket and currentRoom
 
     // Handler functions using useCallback to prevent unnecessary re-renders
     const handleSelectRoom = useCallback((roomId) => {
@@ -261,17 +215,17 @@ const Chat = () => {
 
     // Replace the current handleSendMessage implementation with this:
     const handleSendMessage = useCallback((messageText) => {
-        if (!socket || !currentRoom) return;
+        if (!socket || !currentRoom || !messageText.trim()) return;
         
-        if (messageText.trim()) {
-            const messageData = { 
-                text: messageText, 
-                roomId: currentRoom 
-            };
-            
-            socket.emit('sendMessage', messageData);
-        }
-    }, [socket, currentRoom]);
+        const messageData = { 
+            text: messageText, 
+            roomId: currentRoom,
+            sender: user.id // Include sender ID
+        };
+        
+        console.log('Sending message:', messageData);
+        socket.emit('sendMessage', messageData);
+    }, [socket, currentRoom, user]);
 
     // Create a debounced version outside of useCallback
     const debouncedSendMessage = useMemo(() => {
@@ -297,18 +251,8 @@ const Chat = () => {
         if (!socket || !currentRoom) return;
         
         console.log('Attempting to delete message:', messageId);
-        
-        const messageToDelete = messages.find(msg => 
-            (msg._id === messageId || msg.id === messageId)
-        );
-        
-        if (!messageToDelete) {
-            console.error('Message not found:', messageId);
-            return;
-        }
-        
         socket.emit('deleteMessage', { messageId, roomId: currentRoom });
-    }, [socket, currentRoom, messages]);
+    }, [socket, currentRoom]);
 
     const handleAddUser = useCallback((username) => {
         if (!socket || !currentRoom) return;
@@ -326,6 +270,42 @@ const Chat = () => {
         setShowSidebar(false);
         setShowParticipants(false);
     };
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleRoomDeleted = ({ roomId }) => {
+            console.log('Room deleted:', roomId);
+            setRooms(prevRooms => prevRooms.filter(room => room._id !== roomId));
+            if (currentRoom === roomId) {
+                setCurrentRoom(null);
+                setMessages([]);
+                setParticipants([]);
+            }
+        };
+
+        socket.on('roomDeleted', handleRoomDeleted);
+
+        return () => {
+            socket.off('roomDeleted', handleRoomDeleted);
+        };
+    }, [socket, currentRoom]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleMessageDeleted = ({ messageId }) => {
+            setMessages(prevMessages => 
+                prevMessages.filter(msg => msg._id !== messageId)
+            );
+        };
+
+        socket.on('messageDeleted', handleMessageDeleted);
+
+        return () => {
+            socket.off('messageDeleted', handleMessageDeleted);
+        };
+    }, [socket]);
 
     // Rest of your component remains the same, but update the props to use the memoized values
     return (
