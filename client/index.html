@@ -1,13 +1,31 @@
 <!doctype html>
+<!-- 
+  This is the main HTML file that gets served to the browser.
+  It's a minimal shell that loads our React application.
+  The React app will render its content into the "root" div below.
+-->
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <!-- Metadata about the page -->
+    <meta charset="UTF-8" /> <!-- Character encoding -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" /> <!-- Browser tab icon (favicon) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Mobile responsiveness -->
+    
+    <!-- Page title that appears in the browser tab -->
+    <title>Blab - Instant Messaging App</title>
   </head>
   <body>
+    <!-- 
+      This empty div is where our React application will be mounted.
+      React will inject all the app's HTML, CSS and JavaScript here.
+    -->
     <div id="root"></div>
+    
+    <!-- 
+      This script tag loads our application code.
+      The "type="module"" attribute means it uses ES modules.
+      The src points to our main.jsx file, which Vite will process.
+    -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

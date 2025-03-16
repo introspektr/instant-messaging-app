@@ -2,6 +2,17 @@ import { memo, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import blabLogo from '../assets/blab-logo.svg';
 
+/**
+ * MessageContainer Component
+ * 
+ * This component displays a scrollable container of chat messages.
+ * It automatically scrolls to the bottom when new messages are added.
+ * It can optionally display delete buttons if the onDelete prop is provided.
+ * 
+ * @param {Object} props - Component props
+ * @param {Array} props.messages - Array of message objects to display
+ * @param {Function} [props.onDelete] - Optional callback function to handle message deletion
+ */
 const MessageContainer = ({ messages, onDelete }) => {
     const messagesEndRef = useRef(null);
     
@@ -33,6 +44,7 @@ const MessageContainer = ({ messages, onDelete }) => {
                                     onClick={() => onDelete(message._id)} 
                                     className="delete-message-button"
                                     title="Delete message"
+                                    aria-label={`Delete message from ${senderName}`}
                                 >
                                     🗑️
                                 </button>
@@ -47,7 +59,15 @@ const MessageContainer = ({ messages, onDelete }) => {
 };
 
 MessageContainer.propTypes = {
-    messages: PropTypes.array.isRequired,
+    messages: PropTypes.arrayOf(
+        PropTypes.shape({
+            _id: PropTypes.string.isRequired,
+            content: PropTypes.string.isRequired,
+            sender: PropTypes.shape({
+                username: PropTypes.string
+            })
+        })
+    ).isRequired,
     onDelete: PropTypes.func
 };
 

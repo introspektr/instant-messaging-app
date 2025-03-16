@@ -1,596 +1,744 @@
-/* Base styles */
+/**
+ * Chat Page Styles
+ * 
+ * This file contains styles for the main chat interface, including:
+ * - The overall layout using CSS Grid
+ * - Sidebar styling for room list
+ * - Chat area styling for messages
+ * - Participants sidebar
+ * - Responsive design for different screen sizes
+ * - UI components like buttons, inputs, and messages
+ */
+
+/* 
+ * CSS Variables
+ * 
+ * These custom properties define the color scheme for the chat interface.
+ * Using variables makes it easier to maintain a consistent color scheme
+ * and makes it simpler to change the theme in the future.
+ */
 :root {
-    --sidebar-bg: #2f3136;
-    --main-bg: #36393f;
-    --input-bg: #40444b;
-    --accent-color: #ff5722;
-    --text-color: #dcddde;
-    --secondary-text: #8e9297;
-    --border-color: #202225;
-    --message-hover: #32353b;
+    --sidebar-bg: #2f3136;        /* Dark gray for sidebar background */
+    --main-bg: #36393f;           /* Slightly lighter gray for main area */
+    --input-bg: #40444b;          /* Lighter gray for input fields */
+    --accent-color: #ff5722;      /* Orange accent for highlights */
+    --text-color: #dcddde;        /* Light gray for main text */
+    --secondary-text: #8e9297;    /* Darker gray for secondary text */
+    --border-color: #202225;      /* Very dark gray for borders */
+    --message-hover: #32353b;     /* Slightly lighter than main background for hover states */
 }
 
-/* Main layout */
+/**
+ * Main Chat Layout
+ * 
+ * This uses CSS Grid to create a three-column layout:
+ * 1. Left sidebar for room list
+ * 2. Middle section for messages
+ * 3. Right sidebar for participants list
+ * 
+ * The layout takes up 100% of the viewport height to create a full-screen chat.
+ */
 .chat-app {
-    display: grid;
-    grid-template-columns: 240px 1fr 240px;
-    height: 100vh; /* Keep full height of viewport */
-    max-height: 100vh; /* Ensure it doesn't exceed viewport height */
-    overflow: hidden; /* Prevent scrolling on the outer container */
-    background-color: var(--main-bg);
-    color: var(--text-color);
-    font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    display: grid;                         /* Use CSS Grid for layout */
+    grid-template-columns: 240px 1fr 240px; /* Three-column layout with fixed sidebars */
+    height: 100vh;                         /* 100% of viewport height */
+    max-height: 100vh;                     /* Don't exceed viewport height */
+    overflow: hidden;                      /* Hide anything that overflows */
+    background-color: var(--main-bg);      /* Main background color */
+    color: var(--text-color);              /* Text color */
+    font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Chat font */
 }
 
-/* Sidebar styles */
+/**
+ * Room List Sidebar
+ * 
+ * This is the left sidebar that contains:
+ * - User information and logout button
+ * - Room creation form
+ * - List of available chat rooms
+ */
 .sidebar {
-    background-color: var(--sidebar-bg);
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border-color);
-    overflow-y: auto;
-    max-height: 100vh;
+    background-color: var(--sidebar-bg);   /* Sidebar background color */
+    display: flex;                         /* Use flexbox for layout */
+    flex-direction: column;                /* Stack children vertically */
+    border-right: 1px solid var(--border-color); /* Right border */
+    overflow-y: auto;                      /* Enable vertical scrolling if needed */
+    max-height: 100vh;                     /* Max height of the sidebar */
 }
 
+/**
+ * User Information Section
+ * 
+ * Shows the current user's information at the top of the sidebar:
+ * - Username
+ * - Connection status
+ * - Logout button
+ */
 .user-info {
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--border-color);
-    margin-bottom: 8px;
+    padding: 16px;                         /* Spacing inside the user info section */
+    display: flex;                         /* Use flexbox */
+    align-items: center;                   /* Center items horizontally */
+    justify-content: space-between;        /* Space between elements */
+    background-color: var(--border-color); /* Bottom border */
+    margin-bottom: 8px;                    /* Space below the section */
 }
 
+/* Username styling */
 .user-info h3 {
-    margin: 0;
-    font-weight: 500;
+    margin: 0;                             /* Remove default margin */
+    font-weight: 500;                     /* Semi-bold */
 }
 
+/* Logout button styling */
 .logout-button {
-    background-color: transparent;
-    color: var(--secondary-text);
-    border: none;
-    font-size: 12px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
+    background-color: transparent;         /* No background */
+    color: var(--secondary-text);            /* Secondary text color */
+    border: none;                            /* No border */
+    font-size: 12px;                        /* Small text */
+    cursor: pointer;                         /* Show hand cursor on hover */
+    padding: 4px 8px;                         /* Vertical and horizontal padding */
+    border-radius: 4px;                       /* Rounded corners */
 }
 
+/* Logout button hover effect */
 .logout-button:hover {
-    color: var(--text-color);
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);                  /* Brighter text color */
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly lighter on hover */
 }
 
+/**
+ * Room Creation Form
+ * 
+ * This form allows users to create new chat rooms.
+ */
 .room-creation {
-    padding: 0 16px 16px;
+    padding: 0 16px 16px;                     /* Space below the form */
 }
 
+/* Form layout */
 .room-creation form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: flex;                             /* Use flexbox */
+    flex-direction: column;                     /* Stack elements vertically */
+    gap: 8px;                                   /* Space between elements */
 }
 
+/* Input field for room name */
 .new-room-input {
-    width: 100%;
-    background-color: var(--input-bg);
-    border: none;
-    border-radius: 4px;
-    padding: 8px 12px;
-    color: var(--text-color);
-    font-size: 14px;
+    width: 100%;                                 /* Take full width */
+    background-color: var(--input-bg);           /* Background color */
+    border: none;                                 /* No border */
+    border-radius: 4px;                           /* Rounded corners */
+    padding: 8px 12px;                             /* Inner spacing */
+    color: var(--text-color);                      /* Text color */
+    font-size: 14px;                               /* Font size */
 }
 
+/* Create room button */
 .create-room-button {
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    width: 100%;
+    background-color: var(--accent-color);           /* Background color using accent */
+    color: white;                                      /* Text color */
+    border: none;                                       /* No border */
+    border-radius: 4px;                                 /* Rounded corners */
+    padding: 8px 0;                                       /* Inner spacing */
+    display: flex;                                       /* Use flexbox */
+    align-items: center;                                   /* Center items vertically */
+    justify-content: center;                               /* Center items horizontally */
+    cursor: pointer;                                       /* Show hand cursor on hover */
+    font-size: 14px;                                         /* Small text */
+    width: 100%;                                             /* Full width */
 }
 
+/* Create room button hover effect */
 .create-room-button:hover {
-    background-color: #e64a19;
+    background-color: #e64a19;                             /* Darker orange on hover */
 }
 
-/* Chat room list */
+/**
+ * Room List
+ * 
+ * This section displays the list of available chat rooms.
+ */
 .chat-room-list {
-    flex: 1;
-    overflow-y: auto;
+    flex: 1;                                           /* Take up remaining space */
+    overflow-y: auto;                                    /* Enable vertical scrolling */
 }
 
+/* "Text Channels" header */
 .chat-room-list h3 {
-    padding: 0 16px;
-    font-size: 12px;
-    text-transform: uppercase;
-    color: var(--secondary-text);
-    margin-bottom: 4px;
+    padding: 0 16px;                                      /* Inner spacing */
+    font-size: 12px;                                        /* Small text */
+    text-transform: uppercase;                               /* ALL CAPS */
+    color: var(--secondary-text);                              /* Secondary text color */
+    margin-bottom: 4px;                                       /* Space below header */
 }
 
+/* Room list container */
 .chat-room-list ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+    list-style: none;                                        /* Remove bullet points */
+    padding: 0;                                                 /* Remove default padding */
+    margin: 0;                                                  /* Remove default margin */
 }
 
+/* Individual room item */
 .chat-room-list li {
-    padding: 8px 16px;
-    margin: 0 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
+    padding: 8px 16px;                                          /* Vertical and horizontal padding */
+    margin: 0 8px;                                              /* Space between items */
+    border-radius: 4px;                                           /* Rounded corners */
+    cursor: pointer;                                               /* Show hand cursor on hover */
+    font-size: 15px;                                                 /* Small text */
+    display: flex;                                                    /* Use flexbox */
+    align-items: center;                                                /* Center items vertically */
 }
 
+/* Room item hover effect */
 .chat-room-list li:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.05);                        /* Slightly lighter on hover */
 }
 
+/* Selected room styling */
 .chat-room-list li.active {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: white;
+    background-color: rgba(255, 255, 255, 0.08);                             /* Highlight background */
+    color: white;                                                                 /* Brighter text color */
 }
 
+/* # prefix for room names */
 .chat-room-list li::before {
-    content: "#";
-    margin-right: 6px;
-    color: var(--secondary-text);
+    content: "#";                                                                 /* Add # character */
+    margin-right: 6px;                                                                 /* Space after # */
+    color: var(--secondary-text);                                                        /* Secondary text color */
 }
 
-/* Chat area */
+/**
+ * Main Chat Area
+ * 
+ * This is the middle section where messages are displayed and input field is located.
+ * It's organized as a column with three parts:
+ * 1. Chat header (top)
+ * 2. Message container (middle, scrollable)
+ * 3. Message input (bottom)
+ */
 .chat-area {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    max-height: 100vh;
-    overflow: hidden; /* Prevent scrolling on the chat area container */
+    display: flex;                         /* Use flexbox for layout */
+    flex-direction: column;                /* Stack elements vertically */
+    height: 100%;                          /* Take full height of container */
+    max-height: 100vh;                     /* Max height of the chat area */
+    overflow: hidden;                      /* Hide overflow */
 }
 
+/**
+ * Chat Header
+ * 
+ * Shows the current room name and actions.
+ */
 .chat-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    padding: 12px 16px;                         /* Inner spacing */
+    border-bottom: 1px solid var(--border-color); /* Bottom border */
+    display: flex;                             /* Use flexbox */
+    align-items: center;                       /* Center items vertically */
+    justify-content: space-between;              /* Space between room name and actions */
 }
 
+/* Blab logo in header */
 .header-logo {
-    width: 30px;
-    height: 30px;
-    margin: 0 10px;
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+    width: 30px;                                     /* Width */
+    height: 30px;                                    /* Height */
+    margin: 0 10px;                                    /* Space between logo and room name */
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2)); /* Drop shadow for logo */
 }
 
+/* Room name heading */
 .chat-header h2 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
+    margin: 0;                                         /* Remove default margin */
+    font-size: 16px;                                    /* Font size */
+    font-weight: 600;                                     /* Semi-bold */
 }
 
+/* Delete room button */
 .delete-room-button {
-    background-color: transparent;
-    border: none;
-    color: var(--secondary-text);
-    cursor: pointer;
-    font-size: 16px;
-    padding: 4px 8px;
-    border-radius: 4px;
+    background-color: transparent;                         /* No background */
+    border: none;                                             /* No border */
+    color: var(--secondary-text);                                /* Secondary text color */
+    cursor: pointer;                                             /* Hand cursor */
+    font-size: 16px;                                                /* Emoji size */
+    padding: 4px 8px;                                                  /* Click target padding */
+    border-radius: 4px;                                                   /* Rounded corners */
 }
 
+/* Delete room button hover effect */
 .delete-room-button:hover {
-    color: #ff4d4d;
-    background-color: rgba(255, 77, 77, 0.1);
+    color: #ff4d4d;                                                  /* Red color on hover */
+    background-color: rgba(255, 77, 77, 0.1);                             /* Slight red tint on hover */
 }
 
-/* Message container */
+/**
+ * Message Container
+ * 
+ * This is where chat messages are displayed.
+ * It scrolls independently of the header and input field.
+ */
 .message-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    max-height: calc(100vh - 130px); /* Adjust based on header and input heights */
-    position: relative; /* For absolute positioning of the background logo */
+    flex: 1;                                               /* Take up remaining space */
+    overflow-y: auto;                                       /* Enable vertical scrolling */
+    padding: 16px;                                           /* Inner spacing */
+    display: flex;                                           /* Use flexbox */
+    flex-direction: column;                                     /* Stack messages vertically */
+    align-items: flex-start;                                     /* Align messages to the left */
+    max-height: calc(100vh - 130px);                              /* Adjust based on header and input heights */
+    position: relative;                                           /* For absolute positioning of the background logo */
+}
+
+/* Background logo (shown when a room has no messages) */
+.background-logo-container {
+    position: absolute;                                           /* Position in center */
+    top: 0;                                                      /* Align to top */
+    left: 0;                                                      /* Align to left */
+    width: 100%;                                                   /* Stretch to right */
+    height: 100%;                                                  /* Stretch to bottom */
+    display: flex;                                                  /* Flexbox for centering */
+    justify-content: center;                                          /* Center horizontally */
+    align-items: center;                                                /* Center vertically */
+    pointer-events: none;                                                /* Click through to messages */
+    z-index: 0;                                                         /* Place behind messages */
+    overflow: hidden;                                                    /* Hide overflow */
 }
 
 /* Background logo styling */
-.background-logo-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none; /* Allows clicking through to messages */
-    z-index: 0; /* Place behind messages */
-    overflow: hidden;
-}
-
 .background-logo {
-    width: 70%;
-    height: auto;
-    opacity: 0.05; /* Very faint background */
-    filter: grayscale(30%);
-    transform: scale(1.2); /* Slightly enlarged */
+    width: 70%;                                                   /* Width */
+    height: auto;                                                  /* Auto height */
+    opacity: 0.05;                                                  /* Very faint background */
+    filter: grayscale(30%);                                             /* Grayscale filter */
+    transform: scale(1.2);                                                  /* Slightly enlarged */
 }
 
-/* Ensure messages appear above the background logo */
+/* Common styling for message and no-messages display */
 .message, .no-messages {
-    position: relative;
-    z-index: 1;
+    position: relative;                                                   /* For delete button positioning */
+    z-index: 1;                                                          /* Place above background logo */
 }
 
+/* Message styling */
 .message {
-    display: flex;
-    margin-bottom: 16px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    max-width: 85%;
-    width: auto;
-    align-self: flex-start;
+    display: flex;                                                      /* Use flexbox */
+    margin-bottom: 16px;                                                   /* Space between messages */
+    padding: 8px 12px;                                                      /* Inner spacing */
+    border-radius: 4px;                                                      /* Rounded corners */
+    max-width: 85%;                                                         /* Max width */
+    width: auto;                                                            /* Auto width */
+    align-self: flex-start;                                                   /* Align to the left */
 }
 
+/* Message hover effect */
 .message:hover {
-    background-color: var(--message-hover);
+    background-color: var(--message-hover);                                    /* Highlight on hover */
 }
 
+/* Message content */
 .message-content {
-    flex: 1;
+    flex: 1;                                                                  /* Take up remaining space */
 }
 
+/* Sender name in message */
 .message-content strong {
-    margin-right: 8px;
-    color: #fff;
-    display: inline;
-    margin-bottom: 0;
+    margin-right: 8px;                                                           /* Space after name */
+    color: #fff;                                                                 /* Bright white for sender name */
+    display: inline;                                                              /* Display inline */
+    margin-bottom: 0;                                                               /* Remove bottom margin */
 }
 
+/* Message text */
 .message-content span {
-    word-break: break-word;
-    display: inline;
+    word-break: break-word;                                                          /* Allow long words to break */
+    display: inline;                                                                  /* Display inline */
 }
 
+/* Delete message button */
 .delete-message-button {
-    opacity: 0;
-    background-color: transparent;
-    color: var(--secondary-text);
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 0 4px;
-    border-radius: 4px;
+    opacity: 0;                                                                      /* Hidden by default */
+    background-color: transparent;                                                   /* No background */
+    color: var(--secondary-text);                                                        /* Secondary text color */
+    border: none;                                                                          /* No border */
+    cursor: pointer;                                                                       /* Hand cursor */
+    font-size: 16px;                                                                          /* Emoji size */
+    padding: 0 4px;                                                                             /* Click target padding */
+    border-radius: 4px;                                                                             /* Rounded corners */
 }
 
+/* Show delete button when hovering over message */
 .message:hover .delete-message-button {
-    opacity: 1;
+    opacity: 1;                                                                          /* Fully visible when hovering */
 }
 
+/* Delete button hover effect */
 .delete-message-button:hover {
-    color: #ff4d4d;
-    background-color: rgba(255, 77, 77, 0.1);
+    color: #ff4d4d;                                                                      /* Red color on hover */
+    background-color: rgba(255, 77, 77, 0.1);                                                   /* Slight red tint on hover */
 }
 
-/* Message input */
+/**
+ * Message Input
+ * 
+ * This is the form at the bottom of the chat area for sending messages.
+ */
 .message-input {
-    margin: 16px;
-    padding: 0;
-    border-radius: 8px;
-    background-color: var(--input-bg);
-    display: flex;
-    min-height: 44px; /* Set a fixed minimum height */
+    margin: 16px;                                                                          /* Inner spacing */
+    padding: 0;                                                                             /* Remove default padding */
+    border-radius: 8px;                                                                             /* Rounded corners */
+    background-color: var(--input-bg);                                                                             /* Background color */
+    display: flex;                                                                             /* Use flexbox */
+    min-height: 44px;                                                                             /* Set a fixed minimum height */
 }
 
+/* Message input field */
 .message-input input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    padding: 12px 16px;
-    color: var(--text-color);
-    font-size: 15px;
+    flex: 1;                                                                             /* Take up available space */
+    background: transparent;                                                                             /* No background */
+    border: none;                                                                             /* No border */
+    padding: 12px 16px;                                                                             /* Vertical and horizontal padding */
+    color: var(--text-color);                                                                             /* Text color */
+    font-size: 15px;                                                                             /* Font size */
 }
 
+/* Input focus effect */
 .message-input input:focus {
-    outline: none;
+    outline: none;                                                                             /* Remove default focus outline */
 }
 
+/* Send button */
 .message-input button {
-    background-color: transparent;
-    color: var(--accent-color);
-    border: none;
-    padding: 0 16px;
-    cursor: pointer;
-    font-weight: 500;
+    background-color: transparent;                                                                             /* No background */
+    color: var(--accent-color);                                                                             /* Accent color text */
+    border: none;                                                                             /* No border */
+    padding: 0 16px;                                                                             /* Horizontal padding only */
+    cursor: pointer;                                                                             /* Hand cursor */
+    font-weight: 500;                                                                             /* Semi-bold */
 }
 
+/* Send button hover effect */
 .message-input button:hover {
-    color: #e64a19;
+    color: #e64a19;                                                                             /* Darker orange on hover */
 }
 
-/* Participants sidebar */
+/**
+ * Participants Sidebar
+ * 
+ * This is the right sidebar that shows users in the current room.
+ */
 .participants-sidebar {
-    background-color: var(--sidebar-bg);
-    border-left: 1px solid var(--border-color);
-    padding: 16px;
-    overflow-y: auto;
-    max-height: 100vh;
+    background-color: var(--sidebar-bg);   /* Same background as left sidebar */
+    border-left: 1px solid var(--border-color); /* Left border */
+    padding: 16px;                         /* Inner spacing */
+    overflow-y: auto;                      /* Enable vertical scrolling */
+    max-height: 100vh;                     /* Max height of the sidebar */
 }
 
+/* "Participants" header */
 .participants-sidebar h3 {
-    margin-top: 0;
-    margin-bottom: 16px;
-    font-size: 12px;
-    text-transform: uppercase;
-    color: var(--secondary-text);
+    margin-top: 0;                         /* No top margin */
+    margin-bottom: 16px;                   /* Space below header */
+    font-size: 12px;                       /* Small text */
+    text-transform: uppercase;               /* ALL CAPS */
+    color: var(--secondary-text);            /* Secondary text color */
 }
 
+/* Participants list */
 .participants-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+    list-style: none;                            /* No bullet points */
+    padding: 0;                                   /* No padding */
+    margin: 0;                                     /* No margin */
 }
 
+/* Individual participant item */
 .participant {
-    display: flex;
-    align-items: center;
-    padding: 8px 0;
+    display: flex;                                    /* Use flexbox */
+    align-items: center;                                /* Center items vertically */
+    padding: 8px 0;                                     /* Vertical padding only */
 }
 
+/* Participant avatar */
 .participant-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--accent-color);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 8px;
-    font-weight: 500;
+    width: 32px;                                        /* Width */
+    height: 32px;                                       /* Height */
+    border-radius: 50%;                                 /* Circular shape */
+    background-color: var(--accent-color);                 /* Background color */
+    color: white;                                         /* Text color */
+    display: flex;                                        /* Use flexbox for centering */
+    align-items: center;                                    /* Center vertically */
+    justify-content: center;                                    /* Center horizontally */
+    margin-right: 8px;                                         /* Space between avatar and name */
+    font-weight: 500;                                         /* Bold text */
 }
 
-/* Welcome screen */
+/**
+ * Welcome Screen
+ * 
+ * This is shown when no room is selected.
+ */
 .no-room-selected {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: var(--secondary-text);
+    display: flex;                                    /* Use flexbox */
+    justify-content: center;                                /* Center horizontally */
+    align-items: center;                                    /* Center vertically */
+    height: 100%;                                           /* Full height */
+    color: var(--secondary-text);                                 /* Secondary text color */
 }
 
+/* Welcome message container */
 .welcome-message {
-    text-align: center;
-    max-width: 400px;
-    padding: 2rem;
+    text-align: center;                                     /* Center text */
+    max-width: 400px;                                       /* Maximum width */
+    padding: 2rem;                                           /* Inner spacing */
 }
 
+/* Welcome screen logo */
 .welcome-logo {
-    width: 150px;
-    height: 150px;
-    margin-bottom: 1.5rem;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-    animation: pulse 3s infinite ease-in-out;
+    width: 150px;                                           /* Width */
+    height: 150px;                                          /* Height */
+    margin-bottom: 1.5rem;                                    /* Space below logo */
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));            /* Drop shadow for logo */
+    animation: pulse 3s infinite ease-in-out;                        /* Pulsing animation */
 }
 
+/* Pulsing animation for logo */
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+    0% { transform: scale(1); }                                      /* Original size */
+    50% { transform: scale(1.05); }                                     /* 5% larger */
+    100% { transform: scale(1); }                                       /* Original size */
 }
 
+/* Welcome screen heading */
 .welcome-message h2 {
-    font-size: 24px;
-    margin-bottom: 1rem;
-    color: var(--text-color);
+    font-size: 24px;                                              /* Font size */
+    margin-bottom: 1rem;                                           /* Space below heading */
+    color: var(--text-color);                                         /* Text color */
 }
 
+/* Welcome screen text */
 .welcome-message p {
-    font-size: 16px;
+    font-size: 16px;                                                  /* Font size */
 }
 
-/* Media query for tablets and smaller screens */
+/**
+ * Responsive Design
+ * 
+ * These media queries adjust the layout for different screen sizes.
+ */
+
+/* Adjustments for medium screens (tablets) */
 @media (max-width: 1024px) {
   .chat-app {
-    grid-template-columns: 200px 1fr 200px;
+    grid-template-columns: 200px 1fr 200px; /* Narrower sidebars */
   }
 }
 
-/* Media query for small tablets */
+/* Adjustments for small screens (mobile phones) */
 @media (max-width: 768px) {
   .chat-app {
-    grid-template-columns: 180px 1fr 0;
+    grid-template-columns: 180px 1fr 0; /* Single column layout */
   }
   
+  /* Hide participants sidebar by default */
   .participants-sidebar {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 200px;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    z-index: 10;
+    position: absolute;                                           /* Fixed position overlay */
+    right: 0;                                                   /* Off-screen to the right */
+    top: 0;                                                     /* Aligned to top */
+    bottom: 0;                                                    /* Full height */
+    width: 200px;                                                /* Width */
+    transform: translateX(100%);                                      /* Slide in from right */
+    transition: transform 0.3s ease;                                    /* Smooth slide animation */
+    z-index: 10;                                                    /* Layer above other content */
   }
   
+  /* Show participants sidebar when active */
   .participants-sidebar.show {
-    transform: translateX(0);
+    transform: translateX(0);                                            /* Slide in from right */
   }
   
+  /* Adjust chat header for mobile */
   .chat-header {
-    position: relative;
+    position: relative;                                                /* Remove fixed position */
   }
   
+  /* Participants button visibility */
   .chat-header button.show-participants {
-    display: block;
-    background: none;
-    border: none;
-    color: var(--secondary-text);
-    cursor: pointer;
-    font-size: 16px;
+    display: block;                                                   /* Make visible */
+    background: none;                                                /* No background */
+    border: none;                                                    /* No border */
+    color: var(--secondary-text);                                        /* Secondary text color */
+    cursor: pointer;                                                    /* Hand cursor */
+    font-size: 16px;                                                    /* Larger touch target */
   }
 }
 
-/* Media query for mobile phones */
+/* Further adjustments for extra small screens */
 @media (max-width: 480px) {
   .chat-app {
-    grid-template-columns: 0 1fr 0;
+    grid-template-columns: 0 1fr 0; /* Single column layout */
   }
   
+  /* Hide sidebar by default */
   .sidebar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 240px;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    z-index: 10;
+    position: absolute;                                               /* Fixed position overlay */
+    left: 0;                                                        /* Off-screen to the left */
+    top: 0;                                                          /* Aligned to top */
+    bottom: 0;                                                       /* Full height */
+    width: 240px;                                                    /* Width */
+    transform: translateX(-100%);                                        /* Slide in from left */
+    transition: transform 0.3s ease;                                        /* Smooth slide animation */
+    z-index: 10;                                                        /* Layer above other content */
   }
   
+  /* Show sidebar when active */
   .sidebar.show {
-    transform: translateX(0);
+    transform: translateX(0);                                                /* Slide in from left */
   }
   
+  /* Sidebar button visibility */
   .chat-header button.show-sidebar {
-    display: block;
-    background: none;
-    border: none;
-    color: var(--secondary-text);
-    cursor: pointer;
-    font-size: 16px;
-    margin-right: 8px;
+    display: block;                                                        /* Make visible */
+    background: none;                                                        /* No background */
+    border: none;                                                        /* No border */
+    color: var(--secondary-text);                                                /* Secondary text color */
+    cursor: pointer;                                                        /* Hand cursor */
+    font-size: 16px;                                                        /* Larger touch target */
+    margin-right: 8px;                                                        /* Space to right */
   }
   
+  /* Adjust message input for smaller screens */
   .message-input {
-    margin: 8px;
+    margin: 8px;                                                        /* Smaller padding */
   }
 }
 
-/* Add these to your existing CSS */
+/* Mobile sidebar toggle buttons */
 .chat-header button.show-sidebar,
 .chat-header button.show-participants {
-  display: none;
+  display: none;                                                        /* Hidden by default (shown in media queries) */
 }
 
+/* Sidebar transitions for smooth animations */
 .sidebar.show,
 .participants-sidebar.show {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);                                    /* Add shadow when shown */
 }
 
-/* Overlay for mobile when sidebar/participants are shown */
+/* Mobile overlay for clicking outside to close */
 .mobile-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 5;
+  display: none;                                                                  /* Hidden by default */
+  position: fixed;                                                                  /* Fixed position overlay */
+  top: 0;                                                                           /* Full screen */
+  left: 0;                                                                           /* Full screen */
+  right: 0;                                                                           /* Full screen */
+  bottom: 0;                                                                           /* Full screen */
+  background-color: rgba(0, 0, 0, 0.5);                                               /* Semi-transparent black */
+  z-index: 5;                                                                             /* Below sidebars but above content */
 }
 
 .mobile-overlay.show {
-  display: block;
+  display: block;                                                                  /* Visible */
 }
 
-/* Add User Form Styles */
+/* Add User Form */
 .add-user-container {
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 16px;                                                                  /* Space below container */
+    padding-bottom: 16px;                                                                     /* Space below container */
+    border-bottom: 1px solid var(--border-color);                                                /* Bottom border */
 }
 
+/* Add user button */
 .add-user-button {
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 12px;
-    font-size: 14px;
-    cursor: pointer;
-    width: 100%;
+    background-color: var(--accent-color);                                                                  /* Accent color background */
+    color: white;                                                                                              /* White text */
+    border: none;                                                                                              /* No border */
+    border-radius: 4px;                                                                                              /* Rounded corners */
+    padding: 8px 12px;                                                                                              /* Padding */
+    font-size: 14px;                                                                                              /* Small text */
+    cursor: pointer;                                                                                              /* Hand cursor */
+    width: 100%;                                                                                              /* Full width */
 }
 
+/* Add user button hover effect */
 .add-user-button:hover {
-    background-color: #e64a19;
+    background-color: #e64a19;                                                                  /* Darker orange on hover */
 }
 
+/* Add user form */
 .add-user-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: flex;                                                                  /* Use flexbox */
+    flex-direction: column;                                                                  /* Stack vertically */
+    gap: 8px;                                                                                              /* Space between elements */
 }
 
+/* Add user input field */
 .add-user-input {
-    background-color: var(--input-bg);
-    border: none;
-    border-radius: 4px;
-    padding: 8px 12px;
-    color: var(--text-color);
-    font-size: 14px;
+    background-color: var(--input-bg);                                                                  /* Background color */
+    border: none;                                                                                              /* No border */
+    border-radius: 4px;                                                                                              /* Rounded corners */
+    padding: 8px 12px;                                                                                              /* Inner padding */
+    color: var(--text-color);                                                                                              /* Text color */
+    font-size: 14px;                                                                                              /* Font size */
 }
 
+/* Add user action buttons container */
 .add-user-actions {
-    display: flex;
-    gap: 8px;
+    display: flex;                                                                  /* Use flexbox */
+    gap: 8px;                                                                                              /* Space between buttons */
 }
 
+/* Common styling for add user action buttons */
 .confirm-add-button,
 .cancel-add-button {
-    flex: 1;
-    padding: 6px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
+    flex: 1;                                                                  /* Equal width */
+    padding: 6px;                                                                                              /* Inner padding */
+    border: none;                                                                                              /* No border */
+    border-radius: 4px;                                                                                              /* Rounded corners */
+    font-size: 14px;                                                                                              /* Small text */
+    cursor: pointer;                                                                                              /* Hand cursor */
 }
 
+/* Confirm button styling */
 .confirm-add-button {
-    background-color: var(--accent-color);
-    color: white;
+    background-color: var(--accent-color);                                                                  /* Accent color background */
+    color: white;                                                                                              /* White text */
 }
 
+/* Confirm button hover effect */
 .confirm-add-button:hover {
-    background-color: #e64a19;
+    background-color: #e64a19;                                                                  /* Darker orange on hover */
 }
 
+/* Cancel button styling */
 .cancel-add-button {
-    background-color: var(--input-bg);
-    color: var(--text-color);
+    background-color: var(--input-bg);                                                                  /* Background color */
+    color: var(--text-color);                                                                                              /* Text color */
 }
 
+/* Cancel button hover effect */
 .cancel-add-button:hover {
-    background-color: #4d5057;
+    background-color: #4d5057;                                                                                              /* Darker gray on hover */
 }
 
-/* Add these styles for the connection indicator */
+/* Connection status indicator */
 .connection-status {
-    display: flex;
-    align-items: center;
-    font-size: 12px;
-    margin-bottom: 8px;
+    display: flex;                                                                  /* Use flexbox */
+    align-items: center;                                                                  /* Center items vertically */
+    font-size: 12px;                                                                                              /* Small text */
+    margin-bottom: 8px;                                                                                              /* Space below */
 }
 
+/* Status indicator dot */
 .status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 6px;
+    width: 8px;                                                                  /* Width */
+    height: 8px;                                                                                              /* Height */
+    border-radius: 50%;                                                                                              /* Circular shape */
+    margin-right: 6px;                                                                                              /* Space between indicator and text */
 }
 
+/* Online status indicator */
 .online {
-    background-color: #43b581;
+    background-color: #43b581;                                                                  /* Green for online */
 }
 
+/* Offline status indicator */
 .offline {
-    background-color: #f04747;
+    background-color: #f04747;                                                                                              /* Red for offline */
 } 

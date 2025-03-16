@@ -1,12 +1,26 @@
+/**
+ * Signup Page Styles
+ * 
+ * This file contains styles specific to the signup/registration page of the application.
+ * It controls the layout, appearance, and responsive behavior of the signup form.
+ */
+
+/* 
+ * Signup Container
+ * 
+ * The main wrapper for the signup page that centers the form
+ * and provides the overall background.
+ */
 .signup-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     background-color: var(--darkBackground);
+    padding: 20px;
 }
 
-.signup-form {
+.signup-card {
     background: #2a2a2a;
     padding: 2rem;
     border-radius: 8px;
@@ -19,7 +33,8 @@
 .logo-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 1rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
 }
 
 .app-logo {
@@ -34,9 +49,9 @@
     transform: scale(1.05);
 }
 
-.signup-form h2 {
+.signup-card h2 {
     color: var(--darkForeground);
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
 }
 
 .form-group {
@@ -101,4 +116,19 @@
 
 .login-link a:hover {
     text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .signup-card {
+        padding: 24px;
+    }
+    
+    .app-logo {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .signup-card h2 {
+        font-size: 20px;
+    }
 } 
