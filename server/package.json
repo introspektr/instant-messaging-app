@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"--no-deprecation\" jest --detectOpenHandles",
+    "test:watch": "cross-env NODE_ENV=test NODE_OPTIONS=\"--no-deprecation\" jest --watch",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
@@ -20,6 +21,14 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@shelf/jest-mongodb": "^4.2.0",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^9.1.6",
+    "socket.io-client": "^4.7.2",
+    "supertest": "^6.3.4"
   },
   "description": ""
 }

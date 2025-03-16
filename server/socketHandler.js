@@ -1,31 +1,43 @@
+/**
+ * Socket.IO Handler
+ * 
+ * Manages real-time communication between clients using Socket.IO.
+ * Handles authentication, room management, messaging, and notifications.
+ */
 const Message = require('./models/Message');
 const ChatRoom = require('./models/ChatRoom');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const { ObjectId } = require('mongodb');
+const logger = require('./utils/logger');
+const config = require('./config');
 
+/**
+ * Initialize socket handlers
+ * 
+ * @param {Object} io - Socket.IO server instance
+ */
 const socketHandler = (io) => {
     // Middleware to authenticate socket connections
     io.use(async (socket, next) => {
         try {
             const token = socket.handshake.auth.token;
             if (!token) {
+                logger.warn('Socket connection attempt without token');
                 return next(new Error('Authentication error'));
             }
 
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const decoded = jwt.verify(token, config.jwt.secret);
             socket.userId = decoded.userId;
             next();
         } catch (error) {
+            logger.error('Socket authentication error:', error.message);
             next(new Error('Authentication error'));
         }
     });
 
     io.on('connection', (socket) => {
-        console.log('New connection attempt from:', socket.handshake.headers);
-        console.log('Auth token:', socket.handshake.auth.token);
-
-        console.log('New client connected');
+        logger.debug('New connection from:', socket.userId);
 
         // Emit the list of rooms the user is a participant in
         const emitUserRooms = async () => {
@@ -35,6 +47,7 @@ const socketHandler = (io) => {
                     .populate('participants', 'username');
                 socket.emit('rooms', rooms);
             } catch (error) {
+                logger.error('Error fetching user rooms:', error.message);
                 socket.emit('error', error.message);
             }
         };
@@ -48,7 +61,7 @@ const socketHandler = (io) => {
                 // Extract room name from the data object
                 const roomName = typeof data === 'string' ? data : data.name;
                 
-                console.log('Server: Creating room:', roomName); // Debugging log
+                logger.debug(`User ${socket.userId} creating room: ${roomName}`);
                 const newRoom = await ChatRoom.create({
                     name: roomName,
                     createdBy: socket.userId,
@@ -61,7 +74,7 @@ const socketHandler = (io) => {
                 
                 emitUserRooms(); // Emit updated list of rooms
             } catch (error) {
-                console.error('Error creating room:', error.message); // Debugging log
+                logger.error('Error creating room:', error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -71,19 +84,23 @@ const socketHandler = (io) => {
             try {
                 const chatRoom = await ChatRoom.findById(roomId);
                 if (!chatRoom) {
+                    logger.warn(`User ${socket.userId} attempted to join non-existent room ${roomId}`);
                     socket.emit('error', 'Chat room not found');
                     return;
                 }
 
                 if (!chatRoom.participants.includes(socket.userId)) {
+                    logger.warn(`User ${socket.userId} attempted to join unauthorized room ${roomId}`);
                     socket.emit('error', 'Not authorized to join this room');
                     return;
                 }
 
                 socket.join(roomId);
+                logger.debug(`User ${socket.userId} joined room ${roomId}`);
                 // Emit room data to the client
                 socket.emit('roomData', chatRoom);
             } catch (error) {
+                logger.error(`Error joining room ${roomId}:`, error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -105,6 +122,8 @@ const socketHandler = (io) => {
                 await messageObj.save();
                 await messageObj.populate('sender', 'username');
 
+                logger.debug(`Message sent in room ${message.roomId} by user ${socket.userId}`);
+
                 // Broadcast the message with consistent format
                 io.to(message.roomId).emit('message', {
                     _id: messageObj._id,
@@ -117,7 +136,7 @@ const socketHandler = (io) => {
                 });
 
             } catch (error) {
-                console.error('Error sending message:', error);
+                logger.error('Error sending message:', error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -125,7 +144,7 @@ const socketHandler = (io) => {
         // Handle leaving a chat room
         socket.on('leaveRoom', async ({ roomId }) => {
             socket.leave(roomId);
-            console.log(`User ${socket.userId} left room ${roomId}`);
+            logger.debug(`User ${socket.userId} left room ${roomId}`);
 
             // Notify others in the room
             socket.to(roomId).emit('userLeft', {
@@ -141,7 +160,9 @@ const socketHandler = (io) => {
                     .populate('sender', 'username')
                     .sort({ timestamp: 1 }); // Sort messages by timestamp
                 socket.emit('messages', messages);
+                logger.debug(`Fetched ${messages.length} messages for room ${roomId}`);
             } catch (error) {
+                logger.error(`Error fetching messages for room ${roomId}:`, error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -151,12 +172,14 @@ const socketHandler = (io) => {
             try {
                 const room = await ChatRoom.findById(roomId);
                 if (!room) {
+                    logger.warn(`User ${socket.userId} attempted to delete non-existent room ${roomId}`);
                     socket.emit('error', 'Chat room not found');
                     return;
                 }
 
                 // Check if the user is the creator of the room
                 if (room.createdBy.toString() !== socket.userId) {
+                    logger.warn(`User ${socket.userId} attempted unauthorized deletion of room ${roomId}`);
                     socket.emit('error', 'Not authorized to delete this room');
                     return;
                 }
@@ -167,9 +190,10 @@ const socketHandler = (io) => {
                 // Also delete associated messages
                 await Message.deleteMany({ chatRoom: roomId });
                 
+                logger.info(`Room ${roomId} deleted by user ${socket.userId}`);
                 io.emit('roomDeleted', { roomId }); // Notify all clients about the deletion
             } catch (error) {
-                console.error('Error deleting room:', error.message);
+                logger.error(`Error deleting room ${roomId}:`, error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -180,20 +204,23 @@ const socketHandler = (io) => {
                 const message = await Message.findById(messageId);
                 
                 if (!message) {
+                    logger.warn(`User ${socket.userId} attempted to delete non-existent message ${messageId}`);
                     socket.emit('error', 'Message not found');
                     return;
                 }
                 
                 // Check if user is the sender of the message
                 if (message.sender.toString() !== socket.userId) {
+                    logger.warn(`User ${socket.userId} attempted unauthorized deletion of message ${messageId}`);
                     socket.emit('error', 'Not authorized to delete this message');
                     return;
                 }
                 
                 await Message.findByIdAndDelete(messageId);
+                logger.debug(`Message ${messageId} deleted by user ${socket.userId}`);
                 io.to(roomId).emit('messageDeleted', { messageId });
             } catch (error) {
-                console.error('Error deleting message:', error.message);
+                logger.error(`Error deleting message ${messageId}:`, error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -203,6 +230,7 @@ const socketHandler = (io) => {
             try {
                 await emitUserRooms();
             } catch (error) {
+                logger.error('Error getting rooms:', error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -214,12 +242,15 @@ const socketHandler = (io) => {
                     .populate('participants', 'username _id');
                 
                 if (!room) {
+                    logger.warn(`User ${socket.userId} requested participants for non-existent room ${roomId}`);
                     socket.emit('error', 'Chat room not found');
                     return;
                 }
                 
                 socket.emit('roomParticipants', room.participants);
+                logger.debug(`Fetched ${room.participants.length} participants for room ${roomId}`);
             } catch (error) {
+                logger.error(`Error getting participants for room ${roomId}:`, error.message);
                 socket.emit('error', error.message);
             }
         });
@@ -230,12 +261,14 @@ const socketHandler = (io) => {
                 // Find the room
                 const room = await ChatRoom.findById(roomId);
                 if (!room) {
+                    logger.warn(`User ${socket.userId} attempted to add user to non-existent room ${roomId}`);
                     socket.emit('error', 'Chat room not found');
                     return;
                 }
 
                 // Check if the current user is the creator of the room
                 if (room.createdBy.toString() !== socket.userId) {
+                    logger.warn(`User ${socket.userId} attempted unauthorized user addition to room ${roomId}`);
                     socket.emit('error', 'Only the room creator can add users');
                     return;
                 }
@@ -243,12 +276,14 @@ const socketHandler = (io) => {
                 // Find the user to add by username
                 const userToAdd = await User.findOne({ username });
                 if (!userToAdd) {
+                    logger.warn(`User ${socket.userId} attempted to add non-existent user ${username}`);
                     socket.emit('error', 'User not found');
                     return;
                 }
 
                 // Check if user is already a participant
                 if (room.participants.includes(userToAdd._id)) {
+                    logger.warn(`User ${socket.userId} attempted to add already participating user ${username}`);
                     socket.emit('error', 'User is already in this room');
                     return;
                 }
@@ -260,6 +295,8 @@ const socketHandler = (io) => {
                 // Populate the updated room data
                 await room.populate('participants', 'username _id');
                 await room.populate('createdBy', 'username _id');
+
+                logger.info(`User ${username} added to room ${roomId} by ${socket.userId}`);
 
                 // Notify all clients about the updated room
                 io.emit('roomUpdated', room);
@@ -285,14 +322,14 @@ const socketHandler = (io) => {
                 socket.emit('success', `${username} has been added to the room`);
 
             } catch (error) {
-                console.error('Error adding user to room:', error);
+                logger.error(`Error adding user to room ${roomId}:`, error.message);
                 socket.emit('error', error.message);
             }
         });
 
         // Handle disconnection
         socket.on('disconnect', () => {
-            console.log('User disconnected:', socket.userId);
+            logger.debug(`User disconnected: ${socket.userId}`);
         });
     });
 };

@@ -1,6 +1,20 @@
+/**
+ * User Model
+ * 
+ * Defines the schema for user data including authentication details
+ * and provides methods for password hashing and verification.
+ */
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+/**
+ * User Schema
+ * 
+ * @property {String} username - Unique username for the user
+ * @property {String} email - Unique email address for the user
+ * @property {String} password - Hashed password for authentication
+ * @property {Date} createdAt - Timestamp when the user was created
+ */
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -28,27 +42,30 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-// Hash password before saving
+/**
+ * Pre-save middleware to hash the user's password
+ * Runs before each save() operation on a User document
+ */
 userSchema.pre('save', async function(next) {
-    console.log('Password middleware triggered'); // Debug log
     if (!this.isModified('password')) {
-        console.log('Password not modified, skipping hash');
         return next();
     }
     
     try {
-        console.log('Hashing password...');
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
-        console.log('Password hashed successfully');
         next();
     } catch (error) {
-        console.error('Error hashing password:', error);
         next(error);
     }
 });
 
-// Method to compare passwords
+/**
+ * Compare a candidate password with the user's hashed password
+ * 
+ * @param {String} candidatePassword - Plain text password to verify
+ * @returns {Boolean} True if password matches, false otherwise
+ */
 userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };

@@ -1,6 +1,20 @@
+/**
+ * ChatRoom Model
+ * 
+ * Defines the schema for chat rooms where users can communicate.
+ * Each chat room has participants and stores messages.
+ */
 const mongoose = require('mongoose');
 const Message = require('./Message');
 
+/**
+ * ChatRoom Schema
+ * 
+ * @property {String} name - The name of the chat room
+ * @property {ObjectId} createdBy - Reference to the User who created the room
+ * @property {Array<ObjectId>} participants - Array of Users who are in the room
+ * @property {Date} createdAt - When the chat room was created
+ */
 const chatRoomSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -23,17 +37,26 @@ const chatRoomSchema = new mongoose.Schema({
     }
 });
 
-// Add pre-remove middleware to delete associated messages
+/**
+ * Pre-remove middleware to delete associated messages
+ * Automatically deletes all messages in a chat room when the room is removed
+ */
 chatRoomSchema.pre('remove', async function(next) {
     try {
         await Message.deleteMany({ chatRoom: this._id });
         next();
-    } catch (error) {
-        next(error);
+    } catch (err) {
+        next(err);
     }
 });
 
-// Add static method to handle cascade deletion (alternative approach)
+/**
+ * Static method to delete a chat room and its messages
+ * 
+ * @param {String} chatRoomId - The ID of the chat room to delete
+ * @returns {Boolean} True if deletion was successful
+ * @throws {Error} If deletion fails
+ */
 chatRoomSchema.statics.deleteWithMessages = async function(chatRoomId) {
     try {
         // Delete all messages in the chatroom
@@ -41,8 +64,8 @@ chatRoomSchema.statics.deleteWithMessages = async function(chatRoomId) {
         // Delete the chatroom
         await this.findByIdAndDelete(chatRoomId);
         return true;
-    } catch (error) {
-        throw error;
+    } catch (err) {
+        throw err;
     }
 };
 
