@@ -96,10 +96,6 @@ full-stack/
       
    2. Create a new file named `.env`:
       ```bash
-      # On Windows
-      type nul > .env
-      
-      # On macOS/Linux
       touch .env
       ```
       
@@ -122,10 +118,6 @@ full-stack/
       
    2. Create a new file named `.env`:
       ```bash
-      # On Windows
-      type nul > .env
-      
-      # On macOS/Linux
       touch .env
       ```
       
