@@ -1,7 +1,14 @@
-import { memo } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 const MessageContainer = ({ messages, onDelete }) => {
+    const messagesEndRef = useRef(null);
+    
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
     return (
         <div className="message-container">
             {messages.length === 0 ? (
@@ -28,6 +35,7 @@ const MessageContainer = ({ messages, onDelete }) => {
                     );
                 })
             )}
+            <div ref={messagesEndRef} />
         </div>
     );
 };

@@ -14,7 +14,9 @@
 .chat-app {
     display: grid;
     grid-template-columns: 240px 1fr 240px;
-    height: 100vh;
+    height: 100vh; /* Keep full height of viewport */
+    max-height: 100vh; /* Ensure it doesn't exceed viewport height */
+    overflow: hidden; /* Prevent scrolling on the outer container */
     background-color: var(--main-bg);
     color: var(--text-color);
     font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -27,6 +29,7 @@
     flex-direction: column;
     border-right: 1px solid var(--border-color);
     overflow-y: auto;
+    max-height: 100vh;
 }
 
 .user-info {
@@ -146,6 +149,8 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    max-height: 100vh;
+    overflow: hidden; /* Prevent scrolling on the chat area container */
 }
 
 .chat-header {
@@ -185,6 +190,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    max-height: calc(100vh - 130px); /* Adjust based on header and input heights */
 }
 
 .message {
@@ -244,6 +250,7 @@
     border-radius: 8px;
     background-color: var(--input-bg);
     display: flex;
+    min-height: 44px; /* Set a fixed minimum height */
 }
 
 .message-input input {
@@ -278,6 +285,7 @@
     border-left: 1px solid var(--border-color);
     padding: 16px;
     overflow-y: auto;
+    max-height: 100vh;
 }
 
 .participants-sidebar h3 {
