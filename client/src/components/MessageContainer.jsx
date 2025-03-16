@@ -1,5 +1,6 @@
 import { memo, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import blabLogo from '../assets/blab-logo.svg';
 
 const MessageContainer = ({ messages, onDelete }) => {
     const messagesEndRef = useRef(null);
@@ -11,6 +12,11 @@ const MessageContainer = ({ messages, onDelete }) => {
 
     return (
         <div className="message-container">
+            {/* Background logo */}
+            <div className="background-logo-container">
+                <img src={blabLogo} alt="" className="background-logo" />
+            </div>
+            
             {messages.length === 0 ? (
                 <p className="no-messages">No messages yet. Start the conversation!</p>
             ) : (

@@ -161,6 +161,13 @@
     justify-content: space-between;
 }
 
+.header-logo {
+    width: 30px;
+    height: 30px;
+    margin: 0 10px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+}
+
 .chat-header h2 {
     margin: 0;
     font-size: 16px;
@@ -191,6 +198,36 @@
     flex-direction: column;
     align-items: flex-start;
     max-height: calc(100vh - 130px); /* Adjust based on header and input heights */
+    position: relative; /* For absolute positioning of the background logo */
+}
+
+/* Background logo styling */
+.background-logo-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Allows clicking through to messages */
+    z-index: 0; /* Place behind messages */
+    overflow: hidden;
+}
+
+.background-logo {
+    width: 70%;
+    height: auto;
+    opacity: 0.05; /* Very faint background */
+    filter: grayscale(30%);
+    transform: scale(1.2); /* Slightly enlarged */
+}
+
+/* Ensure messages appear above the background logo */
+.message, .no-messages {
+    position: relative;
+    z-index: 1;
 }
 
 .message {
@@ -324,22 +361,40 @@
 /* Welcome screen */
 .no-room-selected {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     height: 100%;
+    color: var(--secondary-text);
 }
 
 .welcome-message {
     text-align: center;
     max-width: 400px;
+    padding: 2rem;
+}
+
+.welcome-logo {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    animation: pulse 3s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 .welcome-message h2 {
-    margin-bottom: 16px;
+    font-size: 24px;
+    margin-bottom: 1rem;
+    color: var(--text-color);
 }
 
 .welcome-message p {
-    color: var(--secondary-text);
+    font-size: 16px;
 }
 
 /* Media query for tablets and smaller screens */

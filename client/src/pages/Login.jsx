@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Login.css';
+import blabLogo from '../assets/blab-logo.svg';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -52,7 +53,10 @@ const Login = () => {
     return (
         <div className="login-container">
             <form onSubmit={handleSubmit} className="login-form">
-                <h2>Login</h2>
+                <div className="logo-container">
+                    <img src={blabLogo} alt="Blab Logo" className="app-logo" />
+                </div>
+                <h2>Login and start Blabbering</h2>
                 {error && <div className="error-message">{error}</div>}
                 
                 <div className="form-group">

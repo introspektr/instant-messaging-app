@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Signup.css';
+import blabLogo from '../assets/blab-logo.svg';
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -64,7 +65,10 @@ const Signup = () => {
     return (
         <div className="signup-container">
             <form onSubmit={handleSubmit} className="signup-form">
-                <h2>Create Account</h2>
+                <div className="logo-container">
+                    <img src={blabLogo} alt="Blab Logo" className="app-logo" />
+                </div>
+                <h2>Sign up to start Blabbering</h2>
                 {error && <div className="error-message">{error}</div>}
                 
                 <div className="form-group">

@@ -7,10 +7,8 @@ const AddUserForm = ({ onAddUser, isCreator }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (username.trim()) {
-            onAddUser(username);
-            setUsername('');
-        }
+        onAddUser(username);
+        setUsername('');
     };
 
     if (!isCreator) return null;

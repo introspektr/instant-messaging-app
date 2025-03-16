@@ -6,10 +6,8 @@ const MessageInput = ({ onSendMessage }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault(); // Prevent form submission from refreshing the page
-        if (message.trim()) {
-            onSendMessage(message);
-            setMessage('');
-        }
+        onSendMessage(message);
+        setMessage('');
     };
 
     return (

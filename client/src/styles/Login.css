@@ -16,6 +16,24 @@
     text-align: center;
 }
 
+.logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.app-logo {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.app-logo:hover {
+    transform: scale(1.05);
+}
+
 .login-form h2 {
     color: var(--darkForeground);
     margin-bottom: 1.5rem;
@@ -57,10 +75,16 @@
     font-size: 1rem;
     cursor: pointer;
     margin-top: 1rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .login-button:hover {
     background-color: #e64a19;
+    transform: translateY(-2px);
+}
+
+.login-button:active {
+    transform: translateY(0);
 }
 
 .error-message {

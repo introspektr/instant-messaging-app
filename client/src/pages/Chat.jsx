@@ -6,6 +6,7 @@ import MessageInput from '../components/MessageInput';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Chat.css';
 import ToastContainer from '../components/ToastContainer';
+import blabLogo from '../assets/blab-logo.svg';
 
 // Add this utility function at the top of your file
 const debounce = (func, wait) => {
@@ -215,7 +216,12 @@ const Chat = () => {
 
     // Replace the current handleSendMessage implementation with this:
     const handleSendMessage = useCallback((messageText) => {
-        if (!socket || !currentRoom || !messageText.trim()) return;
+        if (!socket || !currentRoom) return;
+        
+        if (!messageText.trim()) {
+            toastRef.current.addToast('Message cannot be empty', 'error');
+            return;
+        }
         
         const messageData = { 
             text: messageText, 
@@ -233,7 +239,12 @@ const Chat = () => {
     }, [handleSendMessage]);
 
     const handleCreateRoom = useCallback(() => {
-        if (!socket || !newRoomName.trim()) return;
+        if (!socket) return;
+        
+        if (!newRoomName.trim()) {
+            toastRef.current.addToast('Room name cannot be empty', 'error');
+            return;
+        }
         
         console.log('Creating room:', newRoomName);
         socket.emit('createRoom', { name: newRoomName });
@@ -256,6 +267,11 @@ const Chat = () => {
 
     const handleAddUser = useCallback((username) => {
         if (!socket || !currentRoom) return;
+        
+        if (!username.trim()) {
+            toastRef.current.addToast('Username cannot be empty', 'error');
+            return;
+        }
         
         console.log(`Attempting to add user ${username} to room ${currentRoom}`);
         socket.emit('addUserToRoom', { roomId: currentRoom, username });
@@ -370,6 +386,7 @@ const Chat = () => {
                                 >
                                     ☰
                                 </button>
+                                <img src={blabLogo} alt="Blab" className="header-logo" />
                                 <h2># {currentRoomData?.name}</h2>
                             </div>
                             <div>
@@ -402,8 +419,9 @@ const Chat = () => {
                 ) : (
                     <div className="no-room-selected">
                         <div className="welcome-message">
-                            <h2>Welcome to Chat!</h2>
-                            <p>Select a room to start chatting or create a new one.</p>
+                            <img src={blabLogo} alt="Blab Logo" className="welcome-logo" />
+                            <h2>Welcome to Blab!</h2>
+                            <p>Select a room to start Blabbering or create a new one.</p>
                         </div>
                     </div>
                 )}
