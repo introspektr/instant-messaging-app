@@ -1,1 +1,14 @@
-node_modules
+# Server-specific ignores
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Uploads directory (if your server stores uploaded files)
+uploads/*
+!uploads/.gitkeep
+
+# Local env files that might be specific to server
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
