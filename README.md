@@ -76,13 +76,7 @@ full-stack/
 
 1. **Clone the repository**:
 
-   ```powershell
-   git clone https://github.com/introspektr/instant-messaging-app.git full-stack
-   cd full-stack
    ```
-
-   _Linux/macOS:_
-   ```bash
    git clone https://github.com/introspektr/instant-messaging-app.git full-stack
    cd full-stack
    ```
@@ -139,12 +133,7 @@ full-stack/
    **For the server:**
    
    1. Navigate to the server directory:
-      ```powershell
-      cd ../server
       ```
-      
-      _Linux/macOS:_
-      ```bash
       cd ../server
       ```
       
@@ -191,12 +180,7 @@ full-stack/
    **For the client:**
    
    1. Navigate to the client directory:
-      ```powershell
-      cd ../client
       ```
-      
-      _Linux/macOS:_
-      ```bash
       cd ../client
       ```
       
@@ -239,13 +223,7 @@ full-stack/
 
 2. **Start the client** (in a new terminal):
 
-   ```powershell
-   cd client
-   npm run dev
    ```
-
-   _Linux/macOS:_
-   ```bash
    cd client
    npm run dev
    ```
@@ -265,13 +243,7 @@ The application includes unit and integration tests for both frontend and backen
 
 ### Running Server Tests
 
-```powershell
-cd server
-npm test
 ```
-
-_Linux/macOS:_
-```bash
 cd server
 npm test
 ```
@@ -283,13 +255,7 @@ The server tests use the `@shelf/jest-mongodb` preset which creates an in-memory
 
 ### Running Client Tests
 
-```powershell
-cd client
-npm test
 ```
-
-_Linux/macOS:_
-```bash
 cd client
 npm test
 ```
