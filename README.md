@@ -108,6 +108,21 @@ full-stack/
       ```
       
    4. Save and close the file.
+
+   **For server tests:**
+   
+   1. Create a new file named `.env.test` in the server directory:
+      ```bash
+      touch .env.test
+      ```
+      
+   2. Add the following content:
+      ```
+      DATABASE_URL=mongodb://localhost:27017/chat-app-test
+      PORT=8747
+      ORIGIN=http://localhost:5173
+      JWT_SECRET=test_secret_key
+      ```
    
    **For the client:**
    
@@ -178,6 +193,15 @@ ORIGIN=http://localhost:5173                        # Client origin for CORS
 JWT_SECRET=your_jwt_secret_key_here                 # JWT signing secret
 ```
 
+### Server Test Environment (server/.env.test)
+
+```
+DATABASE_URL=mongodb://localhost:27017/chat-app-test  # Test database connection string
+PORT=8747                                             # Server port
+ORIGIN=http://localhost:5173                          # Client origin for CORS
+JWT_SECRET=test_secret_key                            # JWT signing secret for tests
+```
+
 ### Client (client/.env)
 
 ```
@@ -214,7 +238,7 @@ VITE_SERVER_URL=http://localhost:8747               # Server API URL
 
 ## Testing
 
-The application includes unit and integration tests for both frontend and backend.
+The application includes unit and integration tests for both frontend and backend. Tests are configured to run with Jest.
 
 ### Running Server Tests
 
@@ -223,12 +247,31 @@ cd server
 npm test
 ```
 
+The server tests use the `@shelf/jest-mongodb` preset which creates an in-memory MongoDB instance for testing. This means:
+- You don't need to have MongoDB running separately for the tests
+- Tests run in isolation and don't affect your real database
+- The configuration is defined in `server/jest.config.js`
+
 ### Running Client Tests
 
 ```bash
 cd client
 npm test
 ```
+
+The client tests use Jest with React Testing Library to test components and functionality.
+
+### Test Files
+
+- **Server tests**: Located in `server/__tests__/`
+- **Client tests**: Located in `client/__tests__/`
+
+### Additional Testing Notes
+
+- The server tests override the JWT secret key with a test-specific value
+- Console output is minimized during tests to keep the output clean
+- The server doesn't actually listen on a port during tests (it's just used for route testing)
+- Test environment loads from `.env.test` instead of `.env` (via config.js)
 
 ---
 
