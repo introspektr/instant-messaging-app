@@ -8,10 +8,10 @@ A full-stack instant messaging application built with the **MERN stack** (MongoD
 - [Project Structure](#project-structure)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Testing](#testing)
 - [Features](#features)
 - [Environment Variables](#environment-variables)
 - [API Endpoints](#api-endpoints)
-- [Testing](#testing)
 - [License](#license)
 
 ## Prerequisites
@@ -53,7 +53,6 @@ full-stack/
 │   ├── jsconfig.json     # JavaScript configuration
 │   ├── components.json   # UI component configuration
 │   ├── .env              # Frontend environment variables
-│   ├── .env.test         # Test environment variables
 │   └── package.json      # Dependencies and scripts
 └── server                # Express backend
     ├── models            # MongoDB schemas
@@ -88,22 +87,16 @@ full-stack/
    cd full-stack
    ```
 
-2. **Set up MongoDB**:
-
-   - **Option 1: Local MongoDB**
-     - Make sure MongoDB is installed and running on your local machine
-     - Create a database named 'chat-app' (will be created automatically on first run)
-
-   - **Option 2: MongoDB Atlas**
-     - Create a free account on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-     - Set up a new cluster
-     - Create a database user and get your connection string
+2. **Set up MongoDB Atlas**:
+   - Create a free account on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+   - Set up a new cluster
+   - Create a database user and get your connection string
 
 3. **Install server dependencies**:
 
    ```powershell
    cd server
-   $env:MONGOMS_DISABLE_POSTINSTALL=1
+   $env:MONGOMS_DISABLE_POSTINSTALL=1  # Prevents mongodb-memory-server from downloading MongoDB binaries during installation, avoiding download errors
    npm install
    ```
 
@@ -125,7 +118,7 @@ full-stack/
 
    ```powershell
    cd ../client
-   npm install --legacy-peer-deps
+   npm install --legacy-peer-deps  # Ignores peer dependency conflicts between React 19 and testing libraries
    ```
 
    _Linux/macOS:_
@@ -224,8 +217,8 @@ full-stack/
       
    4. Save and close the file.
 
-   **Note:** If using MongoDB Atlas, replace the DATABASE_URL with your Atlas connection string.
-   For example: `DATABASE_URL=mongodb+srv://username:password@cluster0.example.mongodb.net/chat-app`
+   **Note:** Your MongoDB Atlas connection string should look something like:
+   `mongodb+srv://username:password@cluster0.example.mongodb.net/chat-app`
 
 ## Usage
 
@@ -265,69 +258,6 @@ full-stack/
    - Register a new user account
    - Create your first chat room
    - Start messaging!
-
-## Features
-
-- **User Authentication**: Register, login, and secure password storage
-- **Real-time Messaging**: Instant message delivery using Socket.IO
-- **Chat Rooms**: Create and join different chat rooms
-- **User Presence**: See when users are online or offline
-- **Message History**: View previous messages when joining a chat room
-- **Responsive Design**: Works on both desktop and mobile devices
-
-## Environment Variables
-
-### Server (server/.env)
-
-```
-DATABASE_URL=mongodb://localhost:27017/chat-app     # MongoDB connection string
-PORT=8747                                           # Server port
-ORIGIN=http://localhost:5173                        # Client origin for CORS
-JWT_SECRET=your_jwt_secret_key_here                 # JWT signing secret
-```
-
-### Server Test Environment (server/.env.test)
-
-```
-DATABASE_URL=mongodb://localhost:27017/chat-app-test  # Test database connection string
-PORT=8747                                             # Server port
-ORIGIN=http://localhost:5173                          # Client origin for CORS
-JWT_SECRET=test_secret_key                            # JWT signing secret for tests
-```
-
-### Client (client/.env)
-
-```
-VITE_SERVER_URL=http://localhost:8747               # Server API URL
-```
-
-## API Endpoints
-
-### Authentication
-
-- **POST /api/auth/register** - Register a new user
-- **POST /api/auth/login** - Login and receive JWT token
-- **GET /api/auth/me** - Get the authenticated user's profile
-- **PUT /api/auth/profile** - Update user profile (first name, last name)
-- **POST /api/auth/logout** - Logout the current user
-
-### Chat Rooms
-
-- **GET /api/chatrooms** - Get all chat rooms
-- **POST /api/chatrooms** - Create a new chat room
-- **GET /api/chatrooms/:id** - Get a specific chat room
-- **PUT /api/chatrooms/:id** - Update a chat room (creator only)
-- **DELETE /api/chatrooms/:id** - Delete a chat room
-- **POST /api/chatrooms/:id/participants** - Add a participant to a chat room
-- **DELETE /api/chatrooms/:id/participants/:userId** - Remove a participant from a chat room
-- **GET /api/chatrooms/:id/messages** - Get messages for a specific chat room
-
-### Messages
-
-- **GET /api/messages/:roomId** - Get messages for a specific chat room
-- **GET /api/messages/:roomId/page/:page** - Get paginated messages for a chat room
-- **POST /api/messages** - Create a new message
-- **DELETE /api/messages/:messageId** - Delete a specific message (sender only)
 
 ## Testing
 
@@ -378,7 +308,71 @@ The client tests use Jest with React Testing Library to test components and func
 - The server doesn't actually listen on a port during tests (it's just used for route testing)
 - Test environment loads from `.env.test` instead of `.env` (via config.js)
 - The custom logger utility automatically suppresses logs during test runs
+- The first run of client tests may take longer due to Jest setting up the test environment and compiling mock implementations
+
+## Features
+
+- **User Authentication**: Register, login, and secure password storage
+- **Real-time Messaging**: Instant message delivery using Socket.IO
+- **Chat Rooms**: Create and join different chat rooms
+- **User Presence**: See when users are online or offline
+- **Message History**: View previous messages when joining a chat room
+- **Responsive Design**: Works on both desktop and mobile devices
+
+## Environment Variables
+
+### Server (server/.env)
+
+```
+DATABASE_URL=<Your MongoDB Atlas connection string here>     # MongoDB connection string
+PORT=8747                                           # Server port
+ORIGIN=http://localhost:5173                        # Client origin for CORS
+JWT_SECRET=your_jwt_secret_key_here                 # JWT signing secret
+```
+
+### Server Test Environment (server/.env.test)
+
+```
+DATABASE_URL=mongodb://localhost:27017/test-db      # Test database connection string
+PORT=8747                                           # Server port
+ORIGIN=http://localhost:5173                        # Client origin for CORS
+JWT_SECRET=test_jwt_secret_key                      # JWT signing secret for tests
+```
+
+### Client (client/.env)
+
+```
+VITE_SERVER_URL=http://localhost:8747               # Server API URL
+```
+
+## API Endpoints
+
+### Authentication
+
+- **POST /api/auth/register** - Register a new user
+- **POST /api/auth/login** - Login and receive JWT token
+- **GET /api/auth/me** - Get the authenticated user's profile
+- **PUT /api/auth/profile** - Update user profile (first name, last name)
+- **POST /api/auth/logout** - Logout the current user
+
+### Chat Rooms
+
+- **GET /api/chatrooms** - Get all chat rooms
+- **POST /api/chatrooms** - Create a new chat room
+- **GET /api/chatrooms/:id** - Get a specific chat room
+- **PUT /api/chatrooms/:id** - Update a chat room (creator only)
+- **DELETE /api/chatrooms/:id** - Delete a chat room
+- **POST /api/chatrooms/:id/participants** - Add a participant to a chat room
+- **DELETE /api/chatrooms/:id/participants/:userId** - Remove a participant from a chat room
+- **GET /api/chatrooms/:id/messages** - Get messages for a specific chat room
+
+### Messages
+
+- **GET /api/messages/:roomId** - Get messages for a specific chat room
+- **GET /api/messages/:roomId/page/:page** - Get paginated messages for a chat room
+- **POST /api/messages** - Create a new message
+- **DELETE /api/messages/:messageId** - Delete a specific message (sender only)
 
 ## License
 
-This project is licensed under the MIT License. 
+This project is licensed under the MIT License.
