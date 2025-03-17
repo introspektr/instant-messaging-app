@@ -12,7 +12,6 @@ A full-stack instant messaging application built with the **MERN stack** (MongoD
 - [Environment Variables](#environment-variables)
 - [API Endpoints](#api-endpoints)
 - [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
 - [License](#license)
 
 ## Prerequisites
@@ -168,7 +167,7 @@ full-stack/
       
    3. Open the `.env` file in your preferred text editor and add the following content:
       ```
-      DATABASE_URL=mongodb://localhost:27017/chat-app
+      DATABASE_URL=<Your MongoDB Atlas connection string here>
       PORT=8747
       ORIGIN=http://localhost:5173
       JWT_SECRET=your_jwt_secret_key_here
@@ -190,10 +189,10 @@ full-stack/
       
    2. Add the following content:
       ```
-      DATABASE_URL=mongodb://localhost:27017/chat-app-test
+      DATABASE_URL=mongodb://localhost:27017/test-db
       PORT=8747
       ORIGIN=http://localhost:5173
-      JWT_SECRET=test_secret_key
+      JWT_SECRET=test_jwt_secret_key
       ```
    
    **For the client:**
@@ -233,7 +232,7 @@ full-stack/
 1. **Start the server**:
 
    ```powershell
-   cd server
+   cd ../server
    npm run dev
    ```
 
@@ -379,127 +378,6 @@ The client tests use Jest with React Testing Library to test components and func
 - The server doesn't actually listen on a port during tests (it's just used for route testing)
 - Test environment loads from `.env.test` instead of `.env` (via config.js)
 - The custom logger utility automatically suppresses logs during test runs
-
-## Troubleshooting
-
-### MongoDB Memory Server Installation Issues
-
-If you encounter errors during server installation related to `mongodb-memory-server`, try these solutions:
-
-1. **Recommended Solution: Skip MongoDB Memory Server download during installation**
-
-   MongoDB Memory Server tries to download MongoDB binaries during installation, which can fail due to network, permissions, or file system issues. The most reliable approach is to skip this step during installation:
-
-   ```powershell
-   cd server
-   $env:MONGOMS_DISABLE_POSTINSTALL=1
-   npm install
-   ```
-
-   _Linux/macOS:_
-   ```bash
-   cd server
-   MONGOMS_DISABLE_POSTINSTALL=1 npm install
-   ```
-
-2. **Running Tests After Installation**
-
-   If you've installed the server dependencies with `MONGOMS_DISABLE_POSTINSTALL=1`, you'll need to make MongoDB available for tests in one of these ways:
-
-   a) **Use your local MongoDB instance instead of the in-memory version:**
-      
-      Modify the `server/jest.config.js` file to disable the MongoDB memory server:
-      
-      ```js
-      module.exports = {
-        testEnvironment: 'node',
-        testTimeout: 30000,
-        // Comment out or remove this line:
-        // preset: '@shelf/jest-mongodb',
-      };
-      ```
-      
-      Make sure your local MongoDB is running when you run the tests.
-
-   b) **Or set the environment variable each time you run tests:**
-      
-      ```powershell
-      $env:MONGOMS_SYSTEM_BINARY="C:\path\to\your\mongod.exe"
-      npm test
-      ```
-
-      _Linux/macOS:_
-      ```bash
-      MONGOMS_SYSTEM_BINARY=/path/to/your/mongod npm test
-      ```
-
-3. **Alternative Approaches**
-
-   - **Skip the tests during development:**
-     ```powershell
-     npm install --ignore-scripts
-     ```
-
-     _Linux/macOS:_
-     ```bash
-     npm install --ignore-scripts
-     ```
-
-   - **For production deployments** where tests don't need to run:
-     ```powershell
-     npm install --omit=dev
-     ```
-
-     _Linux/macOS:_
-     ```bash
-     npm install --omit=dev
-     ```
-
-### React Dependency Conflicts
-
-If you encounter errors during client installation related to React version conflicts, try these solutions:
-
-1. **React 19 and Testing Library compatibility issue**
-
-   If you see an error like this:
-   ```
-   npm error While resolving: @testing-library/react@14.2.1
-   npm error Found: react@19.0.0
-   npm error peer react@"^18.0.0" from @testing-library/react@14.2.1
-   ```
-
-   **Solution**:
-   Install with the `--legacy-peer-deps` flag:
-   ```powershell
-   cd client
-   npm install --legacy-peer-deps
-   ```
-
-   _Linux/macOS:_
-   ```bash
-   cd client
-   npm install --legacy-peer-deps
-   ```
-
-   This flag allows npm to install packages even if there are peer dependency conflicts.
-
-2. **Alternative Solution: Downgrading React**
-
-   If you prefer to resolve the dependency conflicts properly:
-   ```powershell
-   cd client
-   npm install react@18.3.1 react-dom@18.3.1 --save
-   npm install
-   ```
-
-   _Linux/macOS:_
-   ```bash
-   cd client
-   npm install react@18.3.1 react-dom@18.3.1 --save
-   npm install
-   ```
-
-   This will downgrade React to version 18, which is compatible with the testing libraries.
 
 ## License
 
