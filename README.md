@@ -12,6 +12,7 @@ A full-stack instant messaging application built with the **MERN stack** (MongoD
 - [Environment Variables](#environment-variables)
 - [API Endpoints](#api-endpoints)
 - [Testing](#testing)
+- [License](#license)
 
 ## Prerequisites
 
@@ -20,6 +21,7 @@ Ensure the following are installed on your machine before proceeding:
 - [Node.js](https://nodejs.org/) (v18.19.0 or later required)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
 - [MongoDB](https://www.mongodb.com/) (local installation or MongoDB Atlas account)
+- [nodemon](https://nodemon.io/) (for development only - will be installed as a dev dependency)
 
 ## Project Structure
 
@@ -33,21 +35,41 @@ full-stack/
 │   │   ├── styles        # CSS files
 │   │   ├── utils         # Utility functions
 │   │   ├── lib           # Constants and shared libraries
+│   │   ├── test-helpers  # Testing utilities
 │   │   ├── App.jsx       # Main application component
+│   │   ├── App.css       # Application styles
+│   │   ├── index.css     # Global styles
 │   │   └── main.jsx      # Entry point
 │   ├── __tests__         # Frontend tests
+│   ├── __mocks__         # Test mocks
+│   ├── index.html        # HTML entry point
+│   ├── vite.config.js    # Vite configuration
+│   ├── tailwind.config.js # Tailwind CSS configuration
+│   ├── postcss.config.js # PostCSS configuration
+│   ├── jest.config.cjs   # Jest configuration
+│   ├── jest.setup.cjs    # Jest setup
+│   ├── babel.config.cjs  # Babel configuration
+│   ├── eslint.config.js  # ESLint configuration
+│   ├── jsconfig.json     # JavaScript configuration
+│   ├── components.json   # UI component configuration
 │   ├── .env              # Frontend environment variables
+│   ├── .env.test         # Test environment variables
 │   └── package.json      # Dependencies and scripts
 └── server                # Express backend
     ├── models            # MongoDB schemas
     ├── routes            # API route definitions
     ├── middleware        # Express middleware
-    ├── utils             # Utility functions
+    ├── utils             # Utility functions and logger
+    │   ├── logger.js     # Custom logging utility
+    │   └── responseHandler.js # API response formatter
     ├── __tests__         # Backend tests
     ├── socketHandler.js  # WebSocket implementation
     ├── server.js         # Express server setup
     ├── config.js         # Server configuration
+    ├── jest.config.js    # Jest configuration for backend
+    ├── jest-mongodb-config.js # MongoDB test configuration
     ├── .env              # Backend environment variables
+    ├── .env.test         # Test environment variables
     └── package.json      # Dependencies and scripts
 ```
 
@@ -78,12 +100,27 @@ full-stack/
    npm install
    ```
 
+   This will install all required server dependencies including:
+   - Express.js - Web framework
+   - Socket.IO - Real-time communication
+   - Mongoose - MongoDB object modeling
+   - JWT - Authentication
+   - bcrypt - Password hashing
+   - Dev dependencies like Jest and Supertest for testing
+
 4. **Install client dependencies**:
 
    ```bash
    cd ../client
    npm install
    ```
+
+   This will install all required client dependencies including:
+   - React - UI library
+   - React Router - Client-side routing
+   - Socket.IO Client - Real-time communication
+   - Tailwind CSS - Utility-first CSS framework
+   - Testing libraries for Jest
 
 5. **Configure environment variables**:
 
@@ -155,7 +192,7 @@ full-stack/
    npm run dev
    ```
 
-   The server will run at http://localhost:8747 by default.
+   The server will run at http://localhost:8747 by default. The `dev` script uses nodemon to automatically restart the server when changes are detected.
 
 2. **Start the client** (in a new terminal):
 
@@ -164,7 +201,7 @@ full-stack/
    npm run dev
    ```
 
-   The client will run at http://localhost:5173 by default.
+   The client will run at http://localhost:5173 by default. This launches a Vite development server that supports hot module replacement.
 
 3. **Access the application** by navigating to http://localhost:5173 in your web browser.
 
@@ -250,7 +287,7 @@ npm test
 The server tests use the `@shelf/jest-mongodb` preset which creates an in-memory MongoDB instance for testing. This means:
 - You don't need to have MongoDB running separately for the tests
 - Tests run in isolation and don't affect your real database
-- The configuration is defined in `server/jest.config.js`
+- The configuration is defined in `server/jest.config.js` and `server/jest-mongodb-config.js`
 
 ### Running Client Tests
 
@@ -272,8 +309,7 @@ The client tests use Jest with React Testing Library to test components and func
 - Console output is minimized during tests to keep the output clean
 - The server doesn't actually listen on a port during tests (it's just used for route testing)
 - Test environment loads from `.env.test` instead of `.env` (via config.js)
-
----
+- The custom logger utility automatically suppresses logs during test runs
 
 ## License
 
