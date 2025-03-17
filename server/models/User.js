@@ -11,6 +11,8 @@ const bcrypt = require('bcryptjs');
  * User Schema
  * 
  * @property {String} username - Unique username for the user
+ * @property {String} firstName - First name of the user
+ * @property {String} lastName - Last name of the user
  * @property {String} email - Unique email address for the user
  * @property {String} password - Hashed password for authentication
  * @property {Date} createdAt - Timestamp when the user was created
@@ -22,6 +24,16 @@ const userSchema = new mongoose.Schema({
         unique: true,
         trim: true,
         minlength: [3, 'Username must be at least 3 characters long']
+    },
+    firstName: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    lastName: {
+        type: String,
+        trim: true,
+        default: ''
     },
     email: {
         type: String,

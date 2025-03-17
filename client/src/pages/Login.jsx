@@ -23,6 +23,7 @@ const Login = () => {
         password: ''
     });
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     /**
      * Updates form data state when input fields change
@@ -34,6 +35,13 @@ const Login = () => {
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    /**
+     * Toggles password visibility
+     */
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
     /**
@@ -90,7 +98,7 @@ const Login = () => {
                 
                 {error && <div className="error-message" role="alert">{error}</div>}
                 
-                <form onSubmit={handleSubmit} role="form">
+                <form onSubmit={handleSubmit} role="form" className="login-form">
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
                         <input
@@ -105,14 +113,25 @@ const Login = () => {
                     
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
+                        <div className="password-input-container">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
+                            <button 
+                                type="button" 
+                                className="toggle-password"
+                                onClick={togglePasswordVisibility}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                title={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? "👁️" : "👁️‍🗨️"}
+                            </button>
+                        </div>
                     </div>
                     
                     <button type="submit" className="login-button">Login</button>

@@ -31,6 +31,8 @@ const config = require('../config'); // Application configuration
  * 
  * Request body:
  * - username: User's desired username
+ * - firstName: User's first name (optional)
+ * - lastName: User's last name (optional)
  * - email: User's email address
  * - password: User's password (will be hashed before storing)
  * 
@@ -44,7 +46,7 @@ router.post('/register',
     validateRequest,
     async (req, res) => {
         try {
-            const { username, email, password } = req.body;
+            const { username, email, password, firstName, lastName } = req.body;
 
             // Check if user with this email or username already exists
             const existingUser = await User.findOne({ 
@@ -56,7 +58,13 @@ router.post('/register',
             }
 
             // Create new user (password will be hashed by the model's pre-save hook)
-            const user = new User({ username, email, password });
+            const user = new User({ 
+                username, 
+                email, 
+                password,
+                firstName: firstName || '',
+                lastName: lastName || '' 
+            });
             await user.save();
 
             // Generate JWT token - this will be used for authenticating future requests
@@ -72,6 +80,8 @@ router.post('/register',
                 user: {
                     id: user._id,
                     username: user.username,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
                     email: user.email
                 },
                 token
@@ -132,6 +142,8 @@ router.post('/login',
                 user: {
                     id: user._id,
                     username: user.username,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
                     email: user.email
                 },
                 token
@@ -165,6 +177,8 @@ router.get('/me', auth, async (req, res) => {
             user: {
                 id: req.user._id,
                 username: req.user.username,
+                firstName: req.user.firstName,
+                lastName: req.user.lastName,
                 email: req.user.email
             }
         });
@@ -199,6 +213,59 @@ router.post('/logout', auth, async (req, res) => {
         return success(res, 200, 'Logged out successfully');
     } catch (err) {
         return error(res, 500, 'Logout failed', { details: err.message });
+    }
+});
+
+/**
+ * PUT /api/auth/profile
+ * Update the authenticated user's profile
+ * 
+ * Middleware:
+ * - auth: Ensures user is authenticated
+ * 
+ * Request body:
+ * - firstName: User's first name
+ * - lastName: User's last name
+ * 
+ * Response:
+ * - 200: Profile updated successfully
+ * - 400: Validation error
+ * - 401: Not authenticated
+ * - 500: Server error
+ */
+router.put('/profile', auth, async (req, res) => {
+    try {
+        const { firstName, lastName } = req.body;
+        
+        // Find the authenticated user and update profile fields
+        const user = await User.findById(req.user._id);
+        
+        if (!user) {
+            return error(res, 404, 'User not found');
+        }
+        
+        // Update fields if provided
+        if (firstName !== undefined) {
+            user.firstName = firstName.trim();
+        }
+        
+        if (lastName !== undefined) {
+            user.lastName = lastName.trim();
+        }
+        
+        await user.save();
+        
+        return success(res, 200, 'Profile updated successfully', {
+            user: {
+                id: user._id,
+                username: user.username,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email
+            }
+        });
+    } catch (err) {
+        return error(res, 500, 'Failed to update profile', { details: err.message });
     }
 });
 

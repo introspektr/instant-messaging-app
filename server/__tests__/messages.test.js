@@ -42,7 +42,9 @@ describe('Messages API', () => {
     testUser = await User.create({
       username: 'messageuser',
       email: 'messageuser@example.com',
-      password: 'password123'
+      password: 'password123',
+      firstName: 'Message',
+      lastName: 'User'
     });
 
     // Create a test room
@@ -92,6 +94,10 @@ describe('Messages API', () => {
       // Messages should be sorted by timestamp (newest first with default -1 sort)
       expect(response.body.data.messages[0]).toHaveProperty('content', 'Test message 2');
       expect(response.body.data.messages[1]).toHaveProperty('content', 'Test message 1');
+      
+      // Check that firstName and lastName are included in the sender object
+      expect(response.body.data.messages[0].sender).toHaveProperty('firstName', 'Message');
+      expect(response.body.data.messages[0].sender).toHaveProperty('lastName', 'User');
     });
 
     it('should return empty array for room with no messages', async () => {

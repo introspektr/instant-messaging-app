@@ -43,8 +43,8 @@ const socketHandler = (io) => {
         const emitUserRooms = async () => {
             try {
                 const rooms = await ChatRoom.find({ participants: socket.userId })
-                    .populate('createdBy', 'username _id')
-                    .populate('participants', 'username');
+                    .populate('createdBy', 'username _id firstName lastName')
+                    .populate('participants', 'username firstName lastName');
                 socket.emit('rooms', rooms);
             } catch (error) {
                 logger.error('Error fetching user rooms:', error.message);
@@ -120,7 +120,7 @@ const socketHandler = (io) => {
                 });
 
                 await messageObj.save();
-                await messageObj.populate('sender', 'username');
+                await messageObj.populate('sender', 'username firstName lastName');
 
                 logger.debug(`Message sent in room ${message.roomId} by user ${socket.userId}`);
 
@@ -130,7 +130,9 @@ const socketHandler = (io) => {
                     content: messageObj.content,
                     sender: {
                         _id: messageObj.sender._id,
-                        username: messageObj.sender.username
+                        username: messageObj.sender.username,
+                        firstName: messageObj.sender.firstName,
+                        lastName: messageObj.sender.lastName
                     },
                     timestamp: messageObj.timestamp
                 });
@@ -157,7 +159,7 @@ const socketHandler = (io) => {
         socket.on('getMessages', async ({ roomId }) => {
             try {
                 const messages = await Message.find({ chatRoom: roomId })
-                    .populate('sender', 'username')
+                    .populate('sender', 'username firstName lastName')
                     .sort({ timestamp: 1 }); // Sort messages by timestamp
                 socket.emit('messages', messages);
                 logger.debug(`Fetched ${messages.length} messages for room ${roomId}`);
@@ -239,7 +241,7 @@ const socketHandler = (io) => {
         socket.on('getRoomParticipants', async ({ roomId }) => {
             try {
                 const room = await ChatRoom.findById(roomId)
-                    .populate('participants', 'username _id');
+                    .populate('participants', 'username _id firstName lastName');
                 
                 if (!room) {
                     logger.warn(`User ${socket.userId} requested participants for non-existent room ${roomId}`);
@@ -293,8 +295,8 @@ const socketHandler = (io) => {
                 await room.save();
                 
                 // Populate the updated room data
-                await room.populate('participants', 'username _id');
-                await room.populate('createdBy', 'username _id');
+                await room.populate('participants', 'username _id firstName lastName');
+                await room.populate('createdBy', 'username _id firstName lastName');
 
                 logger.info(`User ${username} added to room ${roomId} by ${socket.userId}`);
 
@@ -308,8 +310,8 @@ const socketHandler = (io) => {
                     if (userSocket.userId && userSocket.userId.toString() === userToAdd._id.toString()) {
                         // Emit the updated rooms list to this user
                         const userRooms = await ChatRoom.find({ participants: userToAdd._id })
-                            .populate('createdBy', 'username _id')
-                            .populate('participants', 'username');
+                            .populate('createdBy', 'username _id firstName lastName')
+                            .populate('participants', 'username firstName lastName');
                         userSocket.emit('rooms', userRooms);
                         break;
                     }

@@ -191,6 +191,7 @@ VITE_SERVER_URL=http://localhost:8747               # Server API URL
 - **POST /api/auth/register** - Register a new user
 - **POST /api/auth/login** - Login and receive JWT token
 - **GET /api/auth/me** - Get the authenticated user's profile
+- **PUT /api/auth/profile** - Update user profile (first name, last name)
 - **POST /api/auth/logout** - Logout the current user
 
 ### Chat Rooms

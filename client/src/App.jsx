@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Chat from './pages/Chat'
+import Profile from './pages/Profile'
 import PropTypes from 'prop-types'
 
 /**
@@ -36,6 +37,7 @@ ProtectedRoute.propTypes = {
  * - /signup - Registration page
  * - /login - Authentication page
  * - /chat - Main chat interface (protected, requires authentication)
+ * - /profile - User profile page (protected, requires authentication)
  * 
  * @returns {React.ReactElement} The application with routing
  */
@@ -52,6 +54,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Chat />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           } 
         />

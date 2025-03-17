@@ -62,6 +62,8 @@ const validations = {
      * 
      * Validates:
      * - username: at least 3 characters
+     * - firstName: optional
+     * - lastName: optional
      * - email: must be valid email format
      * - password: at least 6 characters
      */
@@ -70,6 +72,12 @@ const validations = {
             .trim()                          // Remove whitespace
             .isLength({ min: 3 })            // Check length
             .withMessage('Username must be at least 3 characters long'),
+        body('firstName')
+            .trim()                          // Remove whitespace
+            .optional(),                     // Field is optional
+        body('lastName')
+            .trim()                          // Remove whitespace
+            .optional(),                     // Field is optional
         body('email')
             .isEmail()                       // Check email format
             .withMessage('Please provide a valid email'),

@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import * as router from 'react-router-dom';
 import Login from '../src/pages/Login';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 /**
  * Mock the React Router hooks and components
@@ -72,17 +73,19 @@ describe('Login Component', () => {
 
   // Test cases
   
-  test('renders login form with all required elements', () => {
-    render(<Login />);
-    
-    // These assertions are simple DOM checks and should be very fast
+  it('renders login form with all required elements', () => {
+    render(
+      <Router>
+        <Login />
+      </Router>
+    );
     expect(screen.getByText(/Login and start Blabbering/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
-  test('displays error message on login failure', async () => {
+  it('displays error message on login failure', async () => {
     // Override the fetch mock for this specific test
     fetchMock.mockImplementationOnce(() => 
       Promise.resolve({
@@ -98,7 +101,8 @@ describe('Login Component', () => {
     
     // Fill out the form
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password123' } });
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
     
     // Submit the form
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
@@ -115,12 +119,13 @@ describe('Login Component', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  test('redirects on successful login and stores token', async () => {
+  it('redirects on successful login and stores token', async () => {
     render(<Login />);
     
     // Fill out the form
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password123' } });
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
     
     // Submit the form
     fireEvent.click(screen.getByRole('button', { name: /login/i }));

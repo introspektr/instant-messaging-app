@@ -8,6 +8,8 @@ import blabLogo from '../assets/blab-logo.svg';
  * 
  * This component renders a form for user registration with fields for:
  * - Username
+ * - First Name
+ * - Last Name
  * - Email
  * - Password
  * - Password confirmation
@@ -21,11 +23,15 @@ const Signup = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
         confirmPassword: ''
     });
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     /**
      * Updates form data state when input fields change
@@ -37,6 +43,19 @@ const Signup = () => {
             ...formData,
             [e.target.name]: e.target.value
         });
+    };
+
+    /**
+     * Toggles password visibility
+     * 
+     * @param {string} field - The password field to toggle ('password' or 'confirmPassword')
+     */
+    const togglePasswordVisibility = (field) => {
+        if (field === 'password') {
+            setShowPassword(!showPassword);
+        } else {
+            setShowConfirmPassword(!showConfirmPassword);
+        }
     };
 
     /**
@@ -63,6 +82,8 @@ const Signup = () => {
                 },
                 body: JSON.stringify({
                     username: formData.username,
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
                     email: formData.email,
                     password: formData.password,
                 }),
@@ -96,7 +117,7 @@ const Signup = () => {
                 
                 {error && <div className="error-message" role="alert">{error}</div>}
                 
-                <form onSubmit={handleSubmit} role="form">
+                <form onSubmit={handleSubmit} role="form" className="signup-form">
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
                         <input
@@ -107,6 +128,30 @@ const Signup = () => {
                             onChange={handleChange}
                             required
                         />
+                    </div>
+                    
+                    <div className="form-row">
+                        <div className="form-group half">
+                            <label htmlFor="firstName">First Name</label>
+                            <input
+                                type="text"
+                                id="firstName"
+                                name="firstName"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        
+                        <div className="form-group half">
+                            <label htmlFor="lastName">Last Name</label>
+                            <input
+                                type="text"
+                                id="lastName"
+                                name="lastName"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                            />
+                        </div>
                     </div>
                     
                     <div className="form-group">
@@ -121,29 +166,53 @@ const Signup = () => {
                         />
                     </div>
                     
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            minLength="6"
-                        />
-                    </div>
-                    
-                    <div className="form-group">
-                        <label htmlFor="confirmPassword">Confirm Password</label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            required
-                        />
+                    <div className="form-row">
+                        <div className="form-group half">
+                            <label htmlFor="password">Password</label>
+                            <div className="password-input-container">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    minLength="6"
+                                />
+                                <button 
+                                    type="button" 
+                                    className="toggle-password"
+                                    onClick={() => togglePasswordVisibility('password')}
+                                    aria-label={showPassword ? "Hide password" : "Show password"}
+                                    title={showPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showPassword ? "👁️" : "👁️‍🗨️"}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="form-group half">
+                            <label htmlFor="confirmPassword">Confirm Password</label>
+                            <div className="password-input-container">
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <button 
+                                    type="button" 
+                                    className="toggle-password"
+                                    onClick={() => togglePasswordVisibility('confirmPassword')}
+                                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                                    title={showConfirmPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
                     <button type="submit" className="signup-button">Sign Up</button>

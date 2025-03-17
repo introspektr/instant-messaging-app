@@ -18,15 +18,16 @@
     min-height: 100vh;
     background-color: var(--darkBackground);
     padding: 20px;
+    overflow-y: auto; /* Allow scrolling if needed */
 }
 
 .signup-card {
     background: #2a2a2a;
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     width: 100%;
-    max-width: 400px;
+    max-width: 500px; /* Slightly wider to accommodate the two-column layout */
     text-align: center;
 }
 
@@ -37,54 +38,113 @@
     margin-bottom: 0.5rem;
 }
 
-.app-logo {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 0.5rem;
+.logo {
+    width: 80px; /* Reduced logo size */
+    height: 80px;
+    margin-right: 0.75rem;
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
-    transition: transform 0.3s ease;
 }
 
-.app-logo:hover {
-    transform: scale(1.05);
+.logo-container h1 {
+    color: white;
+    font-size: 1.5rem;
+    margin: 0;
 }
 
 .signup-card h2 {
     color: var(--darkForeground);
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem; /* Reduced margin */
+    font-size: 1.2rem;
+}
+
+.signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+@media (min-width: 600px) {
+    .form-row {
+        flex-direction: row;
+    }
+
+    .form-group.half {
+        width: 50%;
+    }
 }
 
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem; /* Reduced margin */
     text-align: left;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem; /* Reduced margin */
     color: var(--darkForeground);
+    font-size: 0.9rem;
 }
 
 .form-group input {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.6rem; /* Reduced padding */
     border: 1px solid #444;
     border-radius: 4px;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Slightly smaller font */
     background-color: #333;
     color: var(--darkForeground);
 }
 
+/* Password input container and toggle button */
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
+    width: 100%;
+    padding-right: 40px; /* Make room for the toggle button */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1rem;
+    color: var(--secondary-text);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+}
+
 .signup-button {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.6rem; /* Reduced padding */
     background-color: #ff5722;
     color: white;
     border: none;
     border-radius: 4px;
     font-size: 1rem;
     cursor: pointer;
-    margin-top: 1rem;
+    margin-top: 0.75rem; /* Reduced margin */
     transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
@@ -100,13 +160,14 @@
 .error-message {
     color: #dc3545;
     background-color: #f8d7da;
-    padding: 0.75rem;
+    padding: 0.6rem; /* Reduced padding */
     border-radius: 4px;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem; /* Reduced margin */
+    font-size: 0.9rem;
 }
 
 .login-link {
-    margin-top: 1rem;
+    margin-top: 0.75rem; /* Reduced margin */
     font-size: 0.9rem;
 }
 
@@ -118,17 +179,46 @@
     text-decoration: underline;
 }
 
-@media (max-width: 600px) {
-    .signup-card {
-        padding: 24px;
+/* Landscape-specific styles */
+@media (max-height: 700px) and (min-width: 600px) {
+    .signup-container {
+        align-items: flex-start;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
     
-    .app-logo {
+    .signup-card {
+        padding: 1rem 1.5rem;
+    }
+    
+    .logo {
         width: 60px;
         height: 60px;
     }
     
     .signup-card h2 {
-        font-size: 20px;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 0.3rem;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 599px) {
+    .signup-card {
+        padding: 1.5rem;
+    }
+    
+    .logo {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .signup-card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
     }
 } 

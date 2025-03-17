@@ -36,6 +36,8 @@ describe('Authentication API', () => {
     it('should register a new user', async () => {
       const userData = {
         username: 'testuser',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'test@example.com',
         password: 'Password123!'
       };
@@ -50,6 +52,8 @@ describe('Authentication API', () => {
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('user');
       expect(response.body.data.user).toHaveProperty('username', 'testuser');
+      expect(response.body.data.user).toHaveProperty('firstName', 'Test');
+      expect(response.body.data.user).toHaveProperty('lastName', 'User');
       expect(response.body.data.user).toHaveProperty('email', 'test@example.com');
       expect(response.body.data.user).not.toHaveProperty('password');
       expect(response.body.data).toHaveProperty('token');
@@ -58,6 +62,8 @@ describe('Authentication API', () => {
       const user = await User.findOne({ email: userData.email });
       expect(user).toBeTruthy();
       expect(user.username).toBe(userData.username);
+      expect(user.firstName).toBe(userData.firstName);
+      expect(user.lastName).toBe(userData.lastName);
       
       // Password should be hashed
       expect(user.password).not.toBe(userData.password);
@@ -179,6 +185,8 @@ describe('Authentication API', () => {
       // Create a user
       const user = await User.create({
         username: 'meuser',
+        firstName: 'Me',
+        lastName: 'User',
         email: 'me@example.com',
         password: 'password123'
       });
@@ -201,6 +209,8 @@ describe('Authentication API', () => {
       expect(response.body.data).toHaveProperty('user');
       expect(response.body.data.user).toHaveProperty('id', user._id.toString());
       expect(response.body.data.user).toHaveProperty('username', 'meuser');
+      expect(response.body.data.user).toHaveProperty('firstName', 'Me');
+      expect(response.body.data.user).toHaveProperty('lastName', 'User');
       expect(response.body.data.user).toHaveProperty('email', 'me@example.com');
     });
 
@@ -209,6 +219,95 @@ describe('Authentication API', () => {
       
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('message', 'Authentication required');
+      expect(response.body).toHaveProperty('success', false);
+    });
+  });
+
+  describe('PUT /api/auth/profile', () => {
+    it('should update user profile when authenticated', async () => {
+      // Create a user
+      const user = await User.create({
+        username: 'profileuser',
+        firstName: '',
+        lastName: '',
+        email: 'profile@example.com',
+        password: 'password123'
+      });
+
+      // Create token directly
+      const token = jwt.sign(
+        { userId: user._id },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      // Update profile
+      const response = await request(app)
+        .put('/api/auth/profile')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          firstName: 'John',
+          lastName: 'Doe'
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty('message', 'Profile updated successfully');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('user');
+      expect(response.body.data.user).toHaveProperty('firstName', 'John');
+      expect(response.body.data.user).toHaveProperty('lastName', 'Doe');
+      
+      // Verify changes were saved to database
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser.firstName).toBe('John');
+      expect(updatedUser.lastName).toBe('Doe');
+    });
+
+    it('should update only firstName when only firstName is provided', async () => {
+      // Create a user
+      const user = await User.create({
+        username: 'partialupdate',
+        firstName: 'Old',
+        lastName: 'Name',
+        email: 'partial@example.com',
+        password: 'password123'
+      });
+
+      // Create token directly
+      const token = jwt.sign(
+        { userId: user._id },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      // Update only firstName
+      const response = await request(app)
+        .put('/api/auth/profile')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          firstName: 'New'
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.user).toHaveProperty('firstName', 'New');
+      expect(response.body.data.user).toHaveProperty('lastName', 'Name'); // Unchanged
+      
+      // Verify in database
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser.firstName).toBe('New');
+      expect(updatedUser.lastName).toBe('Name'); // Unchanged
+    });
+
+    it('should reject unauthenticated profile update request', async () => {
+      const response = await request(app)
+        .put('/api/auth/profile')
+        .send({
+          firstName: 'John',
+          lastName: 'Doe'
+        });
+      
+      expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('success', false);
     });
   });

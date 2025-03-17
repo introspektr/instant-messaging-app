@@ -60,16 +60,18 @@ describe('Socket.io Integration', () => {
   });
 
   beforeEach(async () => {
-    // Clean up collections
+    // Clean up collections before each test
     await User.deleteMany({});
     await ChatRoom.deleteMany({});
     await Message.deleteMany({});
 
-    // Create a test user
+    // Create a test user with firstName and lastName
     testUser = await User.create({
       username: 'socketuser',
       email: 'socketuser@example.com',
-      password: 'password123'
+      password: 'password123',
+      firstName: 'Socket',
+      lastName: 'User'
     });
 
     // Create a test room
@@ -173,6 +175,9 @@ describe('Socket.io Integration', () => {
       expect(message).toHaveProperty('content', 'Hello from test');
       expect(message.sender).toHaveProperty('_id', testUser._id.toString());
       expect(message.sender).toHaveProperty('username', 'socketuser');
+      // Check for the name fields
+      expect(message.sender).toHaveProperty('firstName', 'Socket');
+      expect(message.sender).toHaveProperty('lastName', 'User');
       done();
     });
   });

@@ -493,20 +493,35 @@ const Chat = () => {
                     {/* User info section */}
                     <div className="user-info">
                         <h3>{user?.username}</h3>
+                        {(user?.firstName || user?.lastName) && (
+                            <div className="user-fullname">
+                                {user?.firstName} {user?.lastName}
+                            </div>
+                        )}
                         <div className="connection-status">
                             <span className={`status-indicator ${connected ? 'online' : 'offline'}`}></span>
                             {connected ? 'Connected' : 'Disconnected'}
                         </div>
-                        <button 
-                            className="logout-button"
-                            onClick={() => {
-                                localStorage.removeItem('token');
-                                localStorage.removeItem('user');
-                                navigate('/login');
-                            }}
-                        >
-                            Logout
-                        </button>
+                        <div className="user-actions">
+                            <button 
+                                className="profile-button"
+                                onClick={() => navigate('/profile')}
+                                title="Edit Profile"
+                            >
+                                Edit Profile
+                            </button>
+                            <button 
+                                className="logout-button"
+                                onClick={() => {
+                                    localStorage.removeItem('token');
+                                    localStorage.removeItem('user');
+                                    navigate('/login');
+                                }}
+                                title="Logout"
+                            >
+                                Logout
+                            </button>
+                        </div>
                     </div>
                     
                     {/* Room creation form */}
@@ -604,14 +619,22 @@ const Chat = () => {
                         
                         {/* List of participants in the room */}
                         <ul className="participants-list">
-                            {participants.map(participant => (
-                                <li key={participant._id} className="participant">
-                                    <div className="participant-avatar">
-                                        {participant.username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span>{participant.username}</span>
-                                </li>
-                            ))}
+                            {participants.map(participant => {
+                                // Use username for display
+                                const displayName = participant.username;
+                                
+                                // Get first letter for avatar from username
+                                const avatarLetter = participant.username.charAt(0);
+                                    
+                                return (
+                                    <li key={participant._id} className="participant">
+                                        <div className="participant-avatar">
+                                            {avatarLetter.toUpperCase()}
+                                        </div>
+                                        <span>{displayName}</span>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 )}

@@ -32,7 +32,22 @@ const MessageContainer = ({ messages, onDelete }) => {
                 <p className="no-messages">No messages yet. Start the conversation!</p>
             ) : (
                 messages.map((message) => {
-                    const senderName = message.sender?.username || 'Unknown';
+                    // Determine display name: full name if available, otherwise username
+                    let senderName = message.sender?.username || 'Unknown';
+                    
+                    // Use full name if both firstName and lastName are available
+                    if (message.sender?.firstName && message.sender?.lastName) {
+                        senderName = `${message.sender.firstName} ${message.sender.lastName}`;
+                    } 
+                    // Use just firstName if only that is available
+                    else if (message.sender?.firstName) {
+                        senderName = message.sender.firstName;
+                    }
+                    // Use just lastName if only that is available
+                    else if (message.sender?.lastName) {
+                        senderName = message.sender.lastName;
+                    }
+                    
                     return (
                         <div key={message._id} className="message">
                             <div className="message-content">
@@ -64,7 +79,9 @@ MessageContainer.propTypes = {
             _id: PropTypes.string.isRequired,
             content: PropTypes.string.isRequired,
             sender: PropTypes.shape({
-                username: PropTypes.string
+                username: PropTypes.string,
+                firstName: PropTypes.string,
+                lastName: PropTypes.string
             })
         })
     ).isRequired,

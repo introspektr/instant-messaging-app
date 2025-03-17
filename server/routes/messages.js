@@ -49,7 +49,7 @@ router.get('/:roomId',
             // Find messages for the given room, populate sender details,
             // sort by timestamp descending (newest first), and limit to 50 messages
             const messages = await Message.find({ chatRoom: req.params.roomId })
-                .populate('sender', 'username email')
+                .populate('sender', 'username email firstName lastName')
                 .sort({ timestamp: -1 })
                 .limit(50);
 
@@ -100,7 +100,7 @@ router.get('/:roomId/page/:page',
 
             // Find messages with pagination
             const messages = await Message.find({ chatRoom: req.params.roomId })
-                .populate('sender', 'username email')
+                .populate('sender', 'username email firstName lastName')
                 .sort({ timestamp: -1 }) // Newest first
                 .skip(skip)
                 .limit(limit);
@@ -163,7 +163,7 @@ router.post('/:roomId',
             await message.save();
             
             // Populate sender details for the response
-            await message.populate('sender', 'username email');
+            await message.populate('sender', 'username email firstName lastName');
 
             return success(res, 201, 'Message sent successfully', { message });
         } catch (err) {

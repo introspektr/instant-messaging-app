@@ -43,7 +43,13 @@ describe('Signup Component', () => {
         json: () => Promise.resolve({
           success: true,
           message: 'User registered successfully',
-          data: { id: '123', username: 'testuser', email: 'test@example.com' }
+          data: { 
+            id: '123', 
+            username: 'testuser', 
+            firstName: 'Test', 
+            lastName: 'User',
+            email: 'test@example.com' 
+          }
         })
       })
     );
@@ -65,9 +71,11 @@ describe('Signup Component', () => {
     
     expect(screen.getByText(/Create your Blab account/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i).closest('.password-input-container').querySelector('input')).toBeInTheDocument();
+    expect(screen.getByLabelText(/confirm password/i).closest('.password-input-container').querySelector('input')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /sign up/i })).toBeInTheDocument();
   });
   
@@ -76,9 +84,13 @@ describe('Signup Component', () => {
     
     // Fill out the form with mismatched passwords
     fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'testuser' } });
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Test' } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'User' } });
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password456' } });
+    const passwordInput = screen.getByLabelText(/^password$/i).closest('.password-input-container').querySelector('input');
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i).closest('.password-input-container').querySelector('input');
+    fireEvent.change(confirmPasswordInput, { target: { value: 'password456' } });
     
     // Submit the form
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
@@ -107,9 +119,13 @@ describe('Signup Component', () => {
     
     // Fill out the form
     fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'testuser' } });
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Test' } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'User' } });
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
+    const passwordInput = screen.getByLabelText(/^password$/i).closest('.password-input-container').querySelector('input');
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i).closest('.password-input-container').querySelector('input');
+    fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
     
     // Submit the form
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
@@ -127,9 +143,13 @@ describe('Signup Component', () => {
     
     // Fill out the form
     fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'testuser' } });
+    fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Test' } });
+    fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'User' } });
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
+    const passwordInput = screen.getByLabelText(/^password$/i).closest('.password-input-container').querySelector('input');
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i).closest('.password-input-container').querySelector('input');
+    fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
     
     // Submit the form
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
@@ -137,5 +157,11 @@ describe('Signup Component', () => {
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
+    
+    // Verify we sent the firstName and lastName in the request
+    expect(fetchMock).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+      method: 'POST',
+      body: expect.stringContaining('firstName')
+    }));
   });
 }); 

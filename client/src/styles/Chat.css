@@ -72,38 +72,80 @@
  * Shows the current user's information at the top of the sidebar:
  * - Username
  * - Connection status
- * - Logout button
+ * - Profile and Logout buttons
  */
 .user-info {
     padding: 16px;                         /* Spacing inside the user info section */
     display: flex;                         /* Use flexbox */
-    align-items: center;                   /* Center items horizontally */
-    justify-content: space-between;        /* Space between elements */
-    background-color: var(--border-color); /* Bottom border */
+    flex-direction: column;                /* Stack elements vertically */
+    background-color: var(--border-color); /* Background color */
     margin-bottom: 8px;                    /* Space below the section */
+    border-radius: 8px;                    /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 /* Username styling */
 .user-info h3 {
-    margin: 0;                             /* Remove default margin */
-    font-weight: 500;                     /* Semi-bold */
+    margin: 0 0 10px 0;                    /* Remove default margin */
+    font-weight: 600;                     /* Make it bolder */
+    font-size: 16px;                      /* Slightly larger text */
+    color: white;                         /* Brighter color for emphasis */
+}
+
+/* User's full name styling */
+.user-fullname {
+    font-size: 13px;                      /* Smaller text than username */
+    color: var(--secondary-text);         /* Secondary text color */
+    margin-bottom: 10px;                  /* Space below */
+    padding-left: 2px;                    /* Slight indent */
+}
+
+/* User actions container */
+.user-actions {
+    display: flex;
+    flex-direction: row;                           /* Horizontal layout */
+    justify-content: space-between;                /* Space items evenly */
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* Profile button styling */
+.profile-button {
+    background-color: var(--input-bg);            /* Light background for contrast */
+    color: var(--text-color);                     /* Brighter text */
+    border: none;                                 /* No border */
+    font-size: 12px;                              /* Small text */
+    cursor: pointer;                              /* Show hand cursor on hover */
+    padding: 6px 10px;                            /* More padding for better clickability */
+    border-radius: 4px;                           /* Rounded corners */
+    text-align: center;
+    flex: 1;                                      /* Take equal space */
+    transition: background-color 0.2s, color 0.2s; /* Smooth transition */
+}
+
+/* Profile button hover effect */
+.profile-button:hover {
+    color: white;                                 /* White text on hover */
+    background-color: var(--accent-color);        /* Accent color background */
 }
 
 /* Logout button styling */
 .logout-button {
-    background-color: transparent;         /* No background */
-    color: var(--secondary-text);            /* Secondary text color */
-    border: none;                            /* No border */
-    font-size: 12px;                        /* Small text */
-    cursor: pointer;                         /* Show hand cursor on hover */
-    padding: 4px 8px;                         /* Vertical and horizontal padding */
-    border-radius: 4px;                       /* Rounded corners */
+    background-color: var(--input-bg);            /* Light background for contrast */
+    color: var(--text-color);                     /* Brighter text */
+    border: none;                                 /* No border */
+    font-size: 12px;                              /* Small text */
+    cursor: pointer;                              /* Show hand cursor on hover */
+    padding: 6px 10px;                            /* More padding for better clickability */
+    border-radius: 4px;                           /* Rounded corners */
+    flex: 1;                                      /* Take equal space */
+    transition: background-color 0.2s, color 0.2s; /* Smooth transition */
 }
 
 /* Logout button hover effect */
 .logout-button:hover {
-    color: var(--text-color);                  /* Brighter text color */
-    background-color: rgba(255, 255, 255, 0.1); /* Slightly lighter on hover */
+    color: white;                                 /* White text on hover */
+    background-color: #f04747;                    /* Red background for emphasis */
 }
 
 /**
@@ -567,6 +609,29 @@
     cursor: pointer;                                                    /* Hand cursor */
     font-size: 16px;                                                    /* Larger touch target */
   }
+  
+  /* Adjust user info on mobile */
+  .user-info {
+    padding: 12px;
+    border-radius: 4px;
+  }
+  
+  .user-actions {
+    flex-direction: row;
+    gap: 6px;
+  }
+  
+  .profile-button, .logout-button {
+    padding: 8px;
+    font-size: 11px;
+  }
+  
+  /* Make sure the connection status is still visible but more compact */
+  .connection-status {
+    padding: 4px 6px;
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
 }
 
 /* Further adjustments for extra small screens */
@@ -719,26 +784,32 @@
 
 /* Connection status indicator */
 .connection-status {
-    display: flex;                                                                  /* Use flexbox */
-    align-items: center;                                                                  /* Center items vertically */
-    font-size: 12px;                                                                                              /* Small text */
-    margin-bottom: 8px;                                                                                              /* Space below */
+    display: flex;                                 /* Use flexbox */
+    align-items: center;                           /* Center items vertically */
+    font-size: 12px;                               /* Small text */
+    margin-bottom: 12px;                           /* More space below */
+    padding: 6px 8px;                              /* Add some padding */
+    background-color: rgba(0, 0, 0, 0.2);          /* Slight background for emphasis */
+    border-radius: 4px;                            /* Rounded corners */
 }
 
 /* Status indicator dot */
 .status-indicator {
-    width: 8px;                                                                  /* Width */
-    height: 8px;                                                                                              /* Height */
-    border-radius: 50%;                                                                                              /* Circular shape */
-    margin-right: 6px;                                                                                              /* Space between indicator and text */
+    width: 8px;                                    /* Width */
+    height: 8px;                                   /* Height */
+    border-radius: 50%;                            /* Circular shape */
+    margin-right: 8px;                             /* Space between indicator and text */
+    box-shadow: 0 0 4px;                           /* Glow effect */
 }
 
 /* Online status indicator */
 .online {
-    background-color: #43b581;                                                                  /* Green for online */
+    background-color: #43b581;                     /* Green for online */
+    box-shadow: 0 0 4px #43b581;                   /* Green glow effect */
 }
 
 /* Offline status indicator */
 .offline {
-    background-color: #f04747;                                                                                              /* Red for offline */
+    background-color: #f04747;                     /* Red for offline */
+    box-shadow: 0 0 4px #f04747;                   /* Red glow effect */
 } 
