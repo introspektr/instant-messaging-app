@@ -12,6 +12,7 @@ A full-stack instant messaging application built with the **MERN stack** (MongoD
 - [Environment Variables](#environment-variables)
 - [API Endpoints](#api-endpoints)
 - [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
 - [License](#license)
 
 ## Prerequisites
@@ -77,9 +78,15 @@ full-stack/
 
 1. **Clone the repository**:
 
+   ```powershell
+   git clone https://github.com/introspektr/instant-messaging-app.git full-stack
+   cd full-stack
+   ```
+
+   _Linux/macOS:_
    ```bash
-   git clone https://github.com/yourusername/instant-messaging-app.git
-   cd instant-messaging-app/full-stack
+   git clone https://github.com/introspektr/instant-messaging-app.git full-stack
+   cd full-stack
    ```
 
 2. **Set up MongoDB**:
@@ -95,9 +102,16 @@ full-stack/
 
 3. **Install server dependencies**:
 
+   ```powershell
+   cd server
+   $env:MONGOMS_DISABLE_POSTINSTALL=1
+   npm install
+   ```
+
+   _Linux/macOS:_
    ```bash
    cd server
-   npm install
+   MONGOMS_DISABLE_POSTINSTALL=1 npm install
    ```
 
    This will install all required server dependencies including:
@@ -110,9 +124,15 @@ full-stack/
 
 4. **Install client dependencies**:
 
+   ```powershell
+   cd ../client
+   npm install --legacy-peer-deps
+   ```
+
+   _Linux/macOS:_
    ```bash
    cd ../client
-   npm install
+   npm install --legacy-peer-deps
    ```
 
    This will install all required client dependencies including:
@@ -127,11 +147,21 @@ full-stack/
    **For the server:**
    
    1. Navigate to the server directory:
+      ```powershell
+      cd ../server
+      ```
+      
+      _Linux/macOS:_
       ```bash
-      cd server
+      cd ../server
       ```
       
    2. Create a new file named `.env`:
+      ```powershell
+      New-Item -Path .env -ItemType File
+      ```
+      
+      _Linux/macOS:_
       ```bash
       touch .env
       ```
@@ -149,6 +179,11 @@ full-stack/
    **For server tests:**
    
    1. Create a new file named `.env.test` in the server directory:
+      ```powershell
+      New-Item -Path .env.test -ItemType File
+      ```
+      
+      _Linux/macOS:_
       ```bash
       touch .env.test
       ```
@@ -164,11 +199,21 @@ full-stack/
    **For the client:**
    
    1. Navigate to the client directory:
+      ```powershell
+      cd ../client
+      ```
+      
+      _Linux/macOS:_
       ```bash
       cd ../client
       ```
       
    2. Create a new file named `.env`:
+      ```powershell
+      New-Item -Path .env -ItemType File
+      ```
+      
+      _Linux/macOS:_
       ```bash
       touch .env
       ```
@@ -187,6 +232,12 @@ full-stack/
 
 1. **Start the server**:
 
+   ```powershell
+   cd server
+   npm run dev
+   ```
+
+   _Linux/macOS:_
    ```bash
    cd server
    npm run dev
@@ -196,6 +247,12 @@ full-stack/
 
 2. **Start the client** (in a new terminal):
 
+   ```powershell
+   cd client
+   npm run dev
+   ```
+
+   _Linux/macOS:_
    ```bash
    cd client
    npm run dev
@@ -279,6 +336,12 @@ The application includes unit and integration tests for both frontend and backen
 
 ### Running Server Tests
 
+```powershell
+cd server
+npm test
+```
+
+_Linux/macOS:_
 ```bash
 cd server
 npm test
@@ -291,6 +354,12 @@ The server tests use the `@shelf/jest-mongodb` preset which creates an in-memory
 
 ### Running Client Tests
 
+```powershell
+cd client
+npm test
+```
+
+_Linux/macOS:_
 ```bash
 cd client
 npm test
@@ -310,6 +379,127 @@ The client tests use Jest with React Testing Library to test components and func
 - The server doesn't actually listen on a port during tests (it's just used for route testing)
 - Test environment loads from `.env.test` instead of `.env` (via config.js)
 - The custom logger utility automatically suppresses logs during test runs
+
+## Troubleshooting
+
+### MongoDB Memory Server Installation Issues
+
+If you encounter errors during server installation related to `mongodb-memory-server`, try these solutions:
+
+1. **Recommended Solution: Skip MongoDB Memory Server download during installation**
+
+   MongoDB Memory Server tries to download MongoDB binaries during installation, which can fail due to network, permissions, or file system issues. The most reliable approach is to skip this step during installation:
+
+   ```powershell
+   cd server
+   $env:MONGOMS_DISABLE_POSTINSTALL=1
+   npm install
+   ```
+
+   _Linux/macOS:_
+   ```bash
+   cd server
+   MONGOMS_DISABLE_POSTINSTALL=1 npm install
+   ```
+
+2. **Running Tests After Installation**
+
+   If you've installed the server dependencies with `MONGOMS_DISABLE_POSTINSTALL=1`, you'll need to make MongoDB available for tests in one of these ways:
+
+   a) **Use your local MongoDB instance instead of the in-memory version:**
+      
+      Modify the `server/jest.config.js` file to disable the MongoDB memory server:
+      
+      ```js
+      module.exports = {
+        testEnvironment: 'node',
+        testTimeout: 30000,
+        // Comment out or remove this line:
+        // preset: '@shelf/jest-mongodb',
+      };
+      ```
+      
+      Make sure your local MongoDB is running when you run the tests.
+
+   b) **Or set the environment variable each time you run tests:**
+      
+      ```powershell
+      $env:MONGOMS_SYSTEM_BINARY="C:\path\to\your\mongod.exe"
+      npm test
+      ```
+
+      _Linux/macOS:_
+      ```bash
+      MONGOMS_SYSTEM_BINARY=/path/to/your/mongod npm test
+      ```
+
+3. **Alternative Approaches**
+
+   - **Skip the tests during development:**
+     ```powershell
+     npm install --ignore-scripts
+     ```
+
+     _Linux/macOS:_
+     ```bash
+     npm install --ignore-scripts
+     ```
+
+   - **For production deployments** where tests don't need to run:
+     ```powershell
+     npm install --omit=dev
+     ```
+
+     _Linux/macOS:_
+     ```bash
+     npm install --omit=dev
+     ```
+
+### React Dependency Conflicts
+
+If you encounter errors during client installation related to React version conflicts, try these solutions:
+
+1. **React 19 and Testing Library compatibility issue**
+
+   If you see an error like this:
+   ```
+   npm error While resolving: @testing-library/react@14.2.1
+   npm error Found: react@19.0.0
+   npm error peer react@"^18.0.0" from @testing-library/react@14.2.1
+   ```
+
+   **Solution**:
+   Install with the `--legacy-peer-deps` flag:
+   ```powershell
+   cd client
+   npm install --legacy-peer-deps
+   ```
+
+   _Linux/macOS:_
+   ```bash
+   cd client
+   npm install --legacy-peer-deps
+   ```
+
+   This flag allows npm to install packages even if there are peer dependency conflicts.
+
+2. **Alternative Solution: Downgrading React**
+
+   If you prefer to resolve the dependency conflicts properly:
+   ```powershell
+   cd client
+   npm install react@18.3.1 react-dom@18.3.1 --save
+   npm install
+   ```
+
+   _Linux/macOS:_
+   ```bash
+   cd client
+   npm install react@18.3.1 react-dom@18.3.1 --save
+   npm install
+   ```
+
+   This will downgrade React to version 18, which is compatible with the testing libraries.
 
 ## License
 

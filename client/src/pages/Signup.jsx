@@ -132,7 +132,7 @@ const Signup = () => {
                     
                     <div className="form-row">
                         <div className="form-group half">
-                            <label htmlFor="firstName">First Name</label>
+                            <label htmlFor="firstName">First Name (optional)</label>
                             <input
                                 type="text"
                                 id="firstName"
@@ -143,7 +143,7 @@ const Signup = () => {
                         </div>
                         
                         <div className="form-group half">
-                            <label htmlFor="lastName">Last Name</label>
+                            <label htmlFor="lastName">Last Name (optional)</label>
                             <input
                                 type="text"
                                 id="lastName"
@@ -226,4 +226,4 @@ const Signup = () => {
     );
 };
 
-export default Signup; 
+export default Signup;
